@@ -1,0 +1,12 @@
+.vector3 {
+    display: flex;
+    flex-direction: row;
+    gap: 0.5em;
+    margin-left: 24px;
+    >.input {
+        margin-left: 0 !important;
+    }
+    input {
+        width: 4em;
+    }
+}
