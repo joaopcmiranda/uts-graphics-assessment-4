@@ -40,14 +40,14 @@ export const App = () => {
   _orbitControls = new OrbitControls(_camera, _renderer.domElement);
 
   // setup function, responsible for setting up renderer, scene, input, camera and running the user's setup function
-  const setup = (run?: SetupFunction) => {
+  const setup = async (run?: SetupFunction) => {
 
     _setupFn = run;
 
     // Camera defaults set up
-    const Pos = new Vector3(0, 0, 15);
+    const Pos = new Vector3(0, 150, 150);
     _camera.position.set(Pos.x, Pos.y, Pos.z);
-    const Dir = new Vector3(0, 0, 1);
+    const Dir = new Vector3(0, 0, 0);
     _camera.lookAt(Dir.x, Dir.y, Dir.z);
 
     // Input defaults set up
@@ -57,12 +57,19 @@ export const App = () => {
     // Custom setup
     // allow custom overrides and any additional setup the user desires.
     // Runs the 'run' function, if provided, ONCE
-    return {
-      renderer: _renderer,
-      scene: _scene,
-      orbit: _orbitControls,
-      camera: _camera,
-      ...(run?.({ renderer: _renderer, scene: _scene, orbit: _orbitControls, camera: _camera }) ?? {})
+    try {
+      const runResult = await run?.({ renderer: _renderer, scene: _scene, orbit: _orbitControls, camera: _camera }) ?? {}
+
+      return {
+        renderer: _renderer,
+        scene: _scene,
+        orbit: _orbitControls,
+        camera: _camera,
+        ...runResult
+      }
+    } catch (e) {
+      console.trace();
+      console.error(e);
     }
   }
 
@@ -87,16 +94,22 @@ export const App = () => {
       const delta = clock.getDelta(); // calculate time delta
 
       // Run the provided function every frame
-      _loopFn({
-        clock,
-        delta: delta,
-        renderer: _renderer,
-        orbit: _orbitControls,
-        camera: _camera,
-        scene: _scene
-      });
+      try {
+        _loopFn({
+          clock,
+          delta: delta,
+          renderer: _renderer,
+          orbit: _orbitControls,
+          camera: _camera,
+          scene: _scene
+        });
+      } catch (e) {
+        console.error(e);
+        return;
+      }
 
       if (_loop.ID !== thisLoopID) return; // if the provided function returns false, stop the loop
+
 
       _orbitControls.update(delta); // Update the orbit controls
 
@@ -134,7 +147,7 @@ type SetupFunction = (defaults: {
   orbit: OrbitControls;
   camera: PerspectiveCamera;
   scene: Scene
-}) => { renderer?: WebGLRenderer; scene?: Scene; input?: ReturnType<any>; camera?: PerspectiveCamera } | void
+}) => Promise<{ renderer?: WebGLRenderer; scene?: Scene; input?: ReturnType<any>; camera?: PerspectiveCamera }> | Promise<void>
 
 type LoopFunction = ({ clock, delta, renderer, orbit, camera, scene }: {
   clock: Clock,
