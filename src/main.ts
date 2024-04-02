@@ -1,22 +1,15 @@
 import { App } from "./core/App.ts";
-import { startUI } from "./ui/UI.tsx";
+import { startUI } from "./ui/UI.ts";
 import { AmbientLight, DirectionalLight, Mesh, MeshLambertMaterial, Vector2 } from "three";
 import { generateGeometryFromHeightMap } from "./heightMap/generateGeometryFromHeightMap.ts";
 import { HeightMap } from "./heightMap/HeightMap.ts";
-import { parametersDefaults } from "./parameters.ts";
 
 const app = App();
 
-const parameters = parametersDefaults;
-
-startUI(
-  (_parameters) => {
-    Object.assign(parameters, _parameters)
-    console.log(parameters)
-    app.reset();
-  },
-  () => {}
-);
+const parameters = startUI((_parameters) => {
+  console.log(parameters)
+  app.reset();
+});
 
 await app.setup(async ({ scene }) => {
 
@@ -74,6 +67,7 @@ app.loop(({ clock }) => {
       clock.start()
     }
   }
+
 });
 
 
