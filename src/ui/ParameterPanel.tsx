@@ -4,22 +4,8 @@ import { Range } from "./components/Range.tsx";
 import { Checkbox } from "./components/Checkbox.tsx";
 import styles from "./ParameterPanel.module.scss";
 import { LogarithmicRange } from "./components/LogarithmicRange.tsx";
+import { Parameters, parametersLimits } from "../parameters.ts";
 
-
-export type Parameters = {
-  paused: boolean;
-  wireframe: boolean;
-
-  xLength: number;
-  zLength: number;
-
-  density: number;
-  heightMapDensity: number;
-  heightScale: number;
-
-  generationCount: number;
-
-}
 
 export const ParameterPanel = ({ initialParameters, onUpdateParameters: _onUpdateParameters }: {
   initialParameters: Parameters,
@@ -59,8 +45,7 @@ export const ParameterPanel = ({ initialParameters, onUpdateParameters: _onUpdat
       <h4>Height Map</h4>
       <Range
         label="X Length"
-        min={1}
-        max={2000}
+        {...parametersLimits.xLength}
         value={parameters.xLength}
         onChange={(value) => {
           const newParams: Parameters = { ...parameters, xLength: value }
@@ -70,9 +55,8 @@ export const ParameterPanel = ({ initialParameters, onUpdateParameters: _onUpdat
       <br />
       <Range
         label="Z Length"
-        min={1}
-        max={2000}
         value={parameters.zLength}
+        {...parametersLimits.zLength}
         onChange={(value) => {
           const newParams: Parameters = { ...parameters, zLength: value }
           setParameters(newParams);
@@ -80,50 +64,41 @@ export const ParameterPanel = ({ initialParameters, onUpdateParameters: _onUpdat
         }} />
       <br />
       <LogarithmicRange
-        label="Density"
-        min={0.1}
-        max={100}
-        scale={1000}
-        precision={2}
-        value={parameters.density}
+        label="Poly Count"
+        {...parametersLimits.polyCount}
+        value={parameters.polyCount}
         onChange={(value) => {
-          const newParams: Parameters = { ...parameters, density: value }
+          const newParams: Parameters = { ...parameters, polyCount: value }
           setParameters(newParams);
           debouncedOnUpdateParameters(newParams)
         }} />
       <br />
       <LogarithmicRange
-        label="Height Map Density"
-        min={0.1}
-        max={100}
-        scale={1000}
-        precision={2}
-        value={parameters.heightMapDensity}
+        label="Hill Density"
+        {...parametersLimits.hillDensity}
+        value={parameters.hillDensity}
         onChange={(value) => {
-          const newParams: Parameters = { ...parameters, heightMapDensity: value }
+          const newParams: Parameters = { ...parameters, hillDensity: value }
           setParameters(newParams);
           debouncedOnUpdateParameters(newParams)
         }} />
       <br />
       <Range
-        label="Height Scale"
-        min={1}
-        max={200}
-        value={parameters.heightScale}
+        label="Hill Scale"
+        {...parametersLimits.hillScale}
+        value={parameters.hillScale}
         onChange={(value) => {
-          const newParams: Parameters = { ...parameters, heightScale: value }
+          const newParams: Parameters = { ...parameters, hillScale: value }
           setParameters(newParams);
           debouncedOnUpdateParameters(newParams)
         }} />
       <br />
       <Range
-        label="Generation Count"
-        min={1}
-        max={40}
-        precision={0}
-        value={parameters.generationCount}
+        label="Roughness"
+        {...parametersLimits.roughness}
+        value={parameters.roughness}
         onChange={(value) => {
-          const newParams: Parameters = { ...parameters, generationCount: value }
+          const newParams: Parameters = { ...parameters, roughness: value }
           setParameters(newParams);
           debouncedOnUpdateParameters(newParams)
         }} />
@@ -132,17 +107,3 @@ export const ParameterPanel = ({ initialParameters, onUpdateParameters: _onUpdat
 }
 
 
-export const parametersDefaults: Parameters = {
-  // Simulation
-  paused: false,
-  wireframe: false,
-
-  // Height Map
-  xLength: 100,
-  zLength: 100,
-  density: 10,
-  heightMapDensity: 10,
-  heightScale: 20,
-  generationCount: 1
-
-};

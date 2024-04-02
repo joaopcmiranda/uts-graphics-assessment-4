@@ -1,6 +1,7 @@
 import React from "react"
 import { createRoot } from "react-dom/client";
-import { ParameterPanel, Parameters, parametersDefaults } from "./ParameterPanel.tsx";
+import { ParameterPanel } from "./ParameterPanel.tsx";
+import { Parameters, parametersDefaults } from "../parameters.ts";
 
 export const startUI = (onUpdateParameters: (parameters: Parameters) => void, onClear: ()=> void ) => {
 

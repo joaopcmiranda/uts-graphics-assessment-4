@@ -11,30 +11,23 @@ export const generateGeometryFromHeightMap = (params: {
 
   const { heightMap, xLength, zLength, heightScale, density } = params;
 
-  // Get the height map dimensions
-  const heightMapXLength = heightMap.xLength;
-  const heightMapZLength = heightMap.zLength;
-
   // Calculate the number of points in the x and z directions
   const xPointCount = Math.floor(xLength * density);
   const zPointCount = Math.floor(zLength * density);
 
-  // Calculate the ratio that will translate the height map to the x and z directions
-  const xPointToHeightMapRatio = heightMapXLength / xPointCount;
-  const zPointToHeightMapRatio = heightMapZLength / zPointCount;
+  // Calculate total number of vertices needed
+  const totalVertices = 6 * (xPointCount - 1) * (zPointCount - 1);
 
-  const pointArray: number[] = [];
+  // Initialize Float32Array with the total number of vertices needed
+  const pointArray = new Float32Array(totalVertices * 3); // multiply by 3 for x,y,z
+
+  const heightMatrix = new Float32Array(xPointCount * zPointCount);
 
   const geometry = new BufferGeometry();
 
-  const heightMatrix: number[][] = [];
-
-  for (let i = 0; i < xPointCount; i++) {
-    heightMatrix.push([]);
-    const x = i * xPointToHeightMapRatio;
-    for (let j = 0; j < zPointCount; j++) {
-      const z = j * zPointToHeightMapRatio;
-      heightMatrix[i].push(heightMap.getHeightAt(x, z));
+  for (let i = 0; i < xPointCount; i += 1) {
+    for (let j = 0; j < zPointCount; j += 1) {
+      heightMatrix[i * zPointCount + j] = heightMap.getHeightAt(i / xPointCount, j / zPointCount) * heightScale;
     }
   }
 
@@ -46,6 +39,8 @@ export const generateGeometryFromHeightMap = (params: {
 
   const origin = { x: -xLength / 2, y: 0, z: -zLength / 2 };
 
+  let vertexIndex = 0;
+
   for (let i = 0; i < xPointCount - 1; i += 1) {
     for (let j = 0; j < zPointCount - 1; j += 1) {
       const startX = origin.x + (i * xRatio);
@@ -54,20 +49,34 @@ export const generateGeometryFromHeightMap = (params: {
       const endX = origin.x + ((i + 1) * xRatio);
       const endZ = origin.z + ((j + 1) * zRatio);
 
-      const a = { x: startX, y: origin.y + (heightMatrix[i][j]) * heightScale, z: startZ };
-      const b = { x: endX, y: origin.y + (heightMatrix[i + 1][j]) * heightScale, z: startZ };
-      const c = { x: endX, y: origin.y + (heightMatrix[i + 1][j + 1]) * heightScale, z: endZ };
-      const d = { x: startX, y: origin.y + (heightMatrix[i][j + 1]) * heightScale, z: endZ };
+      const a = { x: startX, y: origin.y + (heightMatrix[i * zPointCount + j]) * heightScale, z: startZ };
+      const b = { x: endX, y: origin.y + (heightMatrix[(i + 1) * zPointCount + j]) * heightScale, z: startZ };
+      const c = { x: startX, y: origin.y + (heightMatrix[i * zPointCount +(j + 1)]) * heightScale, z: endZ };
+      const d = { x: endX, y: origin.y + (heightMatrix[(i + 1) * zPointCount +(j + 1)]) * heightScale, z: endZ };
 
-      pointArray.push(
-        a.x, a.y, a.z,
-        c.x, c.y, c.z,
-        b.x, b.y, b.z,
+      pointArray[vertexIndex++] = c.x
+      pointArray[vertexIndex++] = c.y
+      pointArray[vertexIndex++] = c.z
 
-        a.x, a.y, a.z,
-        d.x, d.y, d.z,
-        c.x, c.y, c.z
-      )
+      pointArray[vertexIndex++] = b.x
+      pointArray[vertexIndex++] = b.y
+      pointArray[vertexIndex++] = b.z
+
+      pointArray[vertexIndex++] = a.x
+      pointArray[vertexIndex++] = a.y
+      pointArray[vertexIndex++] = a.z
+
+      pointArray[vertexIndex++] = d.x
+      pointArray[vertexIndex++] = d.y
+      pointArray[vertexIndex++] = d.z
+
+      pointArray[vertexIndex++] = b.x
+      pointArray[vertexIndex++] = b.y
+      pointArray[vertexIndex++] = b.z
+
+      pointArray[vertexIndex++] = c.x
+      pointArray[vertexIndex++] = c.y
+      pointArray[vertexIndex++] = c.z
     }
   }
 

@@ -1,9 +1,9 @@
 import { App } from "./core/App.ts";
 import { startUI } from "./ui/UI.tsx";
-import { parametersDefaults } from "./ui/ParameterPanel.tsx";
-import { AmbientLight, DirectionalLight, Mesh, MeshLambertMaterial } from "three";
+import { AmbientLight, DirectionalLight, Mesh, MeshLambertMaterial, Vector2 } from "three";
 import { generateGeometryFromHeightMap } from "./heightMap/generateGeometryFromHeightMap.ts";
 import { HeightMap } from "./heightMap/HeightMap.ts";
+import { parametersDefaults } from "./parameters.ts";
 
 const app = App();
 
@@ -12,6 +12,7 @@ const parameters = parametersDefaults;
 startUI(
   (_parameters) => {
     Object.assign(parameters, _parameters)
+    console.log(parameters)
     app.reset();
   },
   () => {}
@@ -19,18 +20,30 @@ startUI(
 
 await app.setup(async ({ scene }) => {
 
+  const xLength = Math.floor(parameters.xLength);
+  const zLength = Math.floor(parameters.zLength);
+  const polyCount = Math.floor(parameters.polyCount);
+  const hillDensity = Math.floor(parameters.hillDensity);
+  const hillScale = Math.floor(parameters.hillScale);
+  const roughness = Math.floor(parameters.roughness);
+
   const heightMap = HeightMap.generate(
-    parameters.zLength,
-    parameters.xLength,
-    parameters.generationCount
+    new Vector2(
+      xLength * polyCount,
+      zLength * polyCount
+    ),
+    hillDensity,
+    roughness
   );
+
+  console.log(heightMap);
 
   const geometry = generateGeometryFromHeightMap({
     heightMap,
-    xLength: parameters.xLength,
-    zLength: parameters.zLength,
-    density: parameters.density,
-    heightScale: parameters.heightScale
+    xLength: xLength,
+    zLength: zLength,
+    density: polyCount,
+    heightScale: hillScale
   })
 
   const material = new MeshLambertMaterial({ color: 0xcccccc });
