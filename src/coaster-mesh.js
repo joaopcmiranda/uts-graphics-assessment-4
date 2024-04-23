@@ -6,13 +6,20 @@ export {createCoasterMesh};
 var halfTrackWidth = 1;
 // half track width to avoid /2 later (may change?)
 var trackRadius = 0.3;
-var trackMaterial = new THREE.MeshBasicMaterial();
+var trackMaterial = new THREE.MeshStandardMaterial(); // change later
 
 
 var crossbarSpacing = 5;
 // really more approximate spacing, to avoid two oddly close / far crossbars at the "end" of a closed loop
 var crossbarRadius = 0.2;
-var crossbarMaterial = new THREE.MeshBasicMaterial();
+var crossbarMaterial = new THREE.MeshStandardMaterial(); // change later
+
+
+var supportSpacing = 8;
+// approximate spacing
+var supportRadius = 0.2;
+var supportWidth = 5;
+var supportMaterial = new THREE.MeshStandardMaterial(); // change later
 
 
 var createCoasterMesh = function (path) {
@@ -135,16 +142,14 @@ var createCoasterMesh = function (path) {
 
     var nCrossbars = Math.floor(path.getLength() / crossbarSpacing);
 
-
-    var crossbarGeoms = [];
     var crossbarMeshes = [];
 
     for (let i = 0; i < nCrossbars; i++) {
 
-        crossbarGeoms[i] = new THREE.BoxGeometry(halfTrackWidth * 2, crossbarRadius, crossbarRadius);
+        let crossbarGeom = new THREE.BoxGeometry(halfTrackWidth * 2, crossbarRadius, crossbarRadius);
         // may replace box geometry with a better one later
         // box is just easy since you can directly set its width
-        crossbarMeshes[i] = new THREE.Mesh(crossbarGeoms[i], crossbarMaterial);
+        crossbarMeshes[i] = new THREE.Mesh(crossbarGeom, crossbarMaterial);
 
         crossbarMeshes[i].lookAt(path.getTangent((i + 0.5) / nCrossbars));
         let newPosition = path.getPointAt((i + 0.5) / nCrossbars);
@@ -161,6 +166,36 @@ var createCoasterMesh = function (path) {
 
     // TODO: Generate supports
 
+    var nSupports = Math.floor(path.getLength() / supportSpacing);
+
+
+    var supportMeshes = [];
+
+    for (let i = 0; i < nSupports; i++) {
+        // supports look like crossbar just below track with poles reaching down to ground
+        // TubeGeometry probably
+
+        let centrePoint = path.getPointAt((i + 0.5) / nSupports);
+        let forwardDir = path.getTangent((i + 0.5) / nSupports);
+        let rightDir = new THREE.Vector3().crossVectors(forwardDir, new THREE.Vector3(0, 1, 0));
+        rightDir.normalize();
+
+        let point1 = new THREE.Vector3(centrePoint.x - (rightDir.x * supportWidth/2), 0, centrePoint.z - (rightDir.z * supportWidth/2));
+        let point2 = new THREE.Vector3(centrePoint.x - (rightDir.x * supportWidth/2), centrePoint.y - (trackRadius/2), centrePoint.z - (rightDir.z * supportWidth/2));
+        let point3 = new THREE.Vector3(centrePoint.x + (rightDir.x * supportWidth/2), centrePoint.y - (trackRadius/2), centrePoint.z + (rightDir.z * supportWidth/2));
+        let point4 = new THREE.Vector3(centrePoint.x + (rightDir.x * supportWidth/2), 0, centrePoint.z + (rightDir.z * supportWidth/2));
+
+        let supportCurve = new THREE.CurvePath();
+        supportCurve.add(new THREE.LineCurve3(point1, point2));
+        supportCurve.add(new THREE.LineCurve3(point2, point3));
+        supportCurve.add(new THREE.LineCurve3(point3, point4));
+
+        let supportGeom = new THREE.TubeGeometry(supportCurve, 64, supportRadius);
+
+        supportMeshes[i] = new THREE.Mesh(supportGeom, supportMaterial);
+
+    }
+
 
 
 
@@ -174,6 +209,10 @@ var createCoasterMesh = function (path) {
 
     for (let i = 0; i < crossbarMeshes.length; i++) {
         output.add(crossbarMeshes[i]);
+    }
+
+    for (let i = 0; i < supportMeshes.length; i++) {
+        output.add(supportMeshes[i]);
     }
 
 
