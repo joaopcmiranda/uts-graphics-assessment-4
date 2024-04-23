@@ -5,10 +5,15 @@ export {createCoasterMesh};
 
 var halfTrackWidth = 1;
 // half track width to avoid /2 later (may change?)
-
 var trackRadius = 0.3;
-
 var trackMaterial = new THREE.MeshBasicMaterial();
+
+
+var crossbarSpacing = 5;
+// really more approximate spacing, to avoid two oddly close / far crossbars at the "end" of a closed loop
+var crossbarRadius = 0.2;
+var crossbarMaterial = new THREE.MeshBasicMaterial();
+
 
 var createCoasterMesh = function (path) {
     // take a path, create the appropriate meshes
@@ -115,8 +120,42 @@ var createCoasterMesh = function (path) {
         }
     }
 
-    // TODO: Generate crossbars
+    var leftTrackModel = new THREE.Mesh(
+        new THREE.TubeGeometry(leftTrackPath, 64, trackRadius),
+        trackMaterial
+    );
 
+    var rightTrackModel = new THREE.Mesh(
+        new THREE.TubeGeometry(rightTrackPath, 64, trackRadius),
+        trackMaterial
+    );
+
+
+    // Generate crossbars
+
+    var nCrossbars = Math.floor(path.getLength() / crossbarSpacing);
+
+
+    var crossbarGeoms = [];
+    var crossbarMeshes = [];
+
+    for (let i = 0; i < nCrossbars; i++) {
+
+        crossbarGeoms[i] = new THREE.BoxGeometry(halfTrackWidth * 2, crossbarRadius, crossbarRadius);
+        // may replace box geometry with a better one later
+        // box is just easy since you can directly set its width
+        crossbarMeshes[i] = new THREE.Mesh(crossbarGeoms[i], crossbarMaterial);
+
+        crossbarMeshes[i].lookAt(path.getTangent((i + 0.5) / nCrossbars));
+        let newPosition = path.getPointAt((i + 0.5) / nCrossbars);
+        // i + 0.5 avoids the crossbars being placed directly on the ends of the path
+        // effectively, you divide the track into i equally spaced regions,
+        // then place crossbars in the middle of each region
+        crossbarMeshes[i].position.x = newPosition.x;
+        crossbarMeshes[i].position.y = newPosition.y;
+        crossbarMeshes[i].position.z = newPosition.z;
+
+    }
     
 
 
@@ -130,18 +169,12 @@ var createCoasterMesh = function (path) {
 
     var output = new THREE.Group();
 
-    var leftTrackModel = new THREE.Mesh(
-        new THREE.TubeGeometry(leftTrackPath, 64, trackRadius),
-        trackMaterial
-    );
-
-    var rightTrackModel = new THREE.Mesh(
-        new THREE.TubeGeometry(rightTrackPath, 64, trackRadius),
-        trackMaterial
-    );
-
     output.add(leftTrackModel);
     output.add(rightTrackModel);
+
+    for (let i = 0; i < crossbarMeshes.length; i++) {
+        output.add(crossbarMeshes[i]);
+    }
 
 
     return output;
