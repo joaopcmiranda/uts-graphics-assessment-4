@@ -3,23 +3,35 @@ import * as THREE from "three";
 
 export {createCoasterMesh};
 
+
+var metalTexture = new THREE.TextureLoader().load("textures/steel.jpg");
+
 var halfTrackWidth = 1;
 // half track width to avoid /2 later (may change?)
 var trackRadius = 0.3;
-var trackMaterial = new THREE.MeshStandardMaterial(); // change later
+var trackMaterial = new THREE.MeshPhongMaterial();
+trackMaterial.shininess = 100;
+trackMaterial.map = metalTexture;
+trackMaterial.color = new THREE.Color(1.0, 0.1, 0.1);
 
 
 var crossbarSpacing = 5;
 // really more approximate spacing, to avoid two oddly close / far crossbars at the "end" of a closed loop
 var crossbarRadius = 0.2;
-var crossbarMaterial = new THREE.MeshStandardMaterial(); // change later
+var crossbarMaterial = new THREE.MeshPhongMaterial();
+crossbarMaterial.shininess = 30;
+crossbarMaterial.map = metalTexture;
+crossbarMaterial.color = new THREE.Color(0.5, 0.15, 0.15);
 
 
 var supportSpacing = 8;
 // approximate spacing
 var supportRadius = 0.2;
 var supportWidth = 5;
-var supportMaterial = new THREE.MeshStandardMaterial(); // change later
+var supportMaterial = new THREE.MeshPhongMaterial();
+supportMaterial.shininess = 60;
+supportMaterial.map = metalTexture;
+supportMaterial.color = new THREE.Color(0.4, 0.4, 0.7);
 
 
 var createCoasterMesh = function (path) {
