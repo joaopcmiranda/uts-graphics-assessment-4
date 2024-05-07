@@ -89,33 +89,47 @@ var createCoasterMesh = function (path) {
             // Quadratic curve: v0, v1, v2
 
             // get direction from v0 to v1
-            let dir1 = new THREE.Vector3().subVectors(path.curves[i].v1, path.curves[i].v0);
-            dir1.normalize();
+            // let dir1 = new THREE.Vector3().subVectors(path.curves[i].v1, path.curves[i].v0);
+            // dir1.normalize();
 
-            // get perpendicular direction to track: cross with up vector
-            // should be pointing "right" from the track
+            // // get perpendicular direction to track: cross with up vector
+            // // should be pointing "right" from the track
+            // let perp1 = new THREE.Vector3().crossVectors(dir1, new THREE.Vector3(0, 1, 0));
+            // perp1.normalize();
+
+
+            // // get direction from v1 to v2
+            // let dir2 = new THREE.Vector3().subVectors(path.curves[i].v2, path.curves[i].v1);
+            // dir2.normalize();
+
+            // // get perpendicular direction to track: cross with up vector
+            // // should be pointing "right" from the track
+            // let perp2 = new THREE.Vector3().crossVectors(dir2, new THREE.Vector3(0, 1, 0));
+            // perp2.normalize();
+
+            let dir0 = path.curves[i].getTangent(0.0);
+            let perp0 = new THREE.Vector3().crossVectors(dir0, new THREE.Vector3(0, 1, 0));
+            perp0.normalize();
+
+            let dir1 = path.curves[i].getTangent(0.5);
             let perp1 = new THREE.Vector3().crossVectors(dir1, new THREE.Vector3(0, 1, 0));
             perp1.normalize();
-
-
-            // get direction from v1 to v2
-            let dir2 = new THREE.Vector3().subVectors(path.curves[i].v2, path.curves[i].v1);
-            dir2.normalize();
-
-            // get perpendicular direction to track: cross with up vector
-            // should be pointing "right" from the track
+            
+            let dir2 = path.curves[i].getTangent(1.0);
             let perp2 = new THREE.Vector3().crossVectors(dir2, new THREE.Vector3(0, 1, 0));
             perp2.normalize();
+
+
+            
 
 
             // add paths offset by perp distance
 
             let rightV0 = path.curves[i].v0.clone();
-            rightV0.addScaledVector(perp1, halfTrackWidth);
+            rightV0.addScaledVector(perp0, halfTrackWidth);
 
             let rightV1 = path.curves[i].v1.clone();
             rightV1.addScaledVector(perp1, halfTrackWidth);
-            rightV1.addScaledVector(perp2, halfTrackWidth);
 
             let rightV2 = path.curves[i].v2.clone();
             rightV2.addScaledVector(perp2, halfTrackWidth);
@@ -123,11 +137,10 @@ var createCoasterMesh = function (path) {
             rightTrackPath.add(new THREE.QuadraticBezierCurve3(rightV0, rightV1, rightV2));
 
             let leftV0 = path.curves[i].v0.clone();
-            leftV0.addScaledVector(perp1, -halfTrackWidth);
+            leftV0.addScaledVector(perp0, -halfTrackWidth);
 
             let leftV1 = path.curves[i].v1.clone();
             leftV1.addScaledVector(perp1, -halfTrackWidth);
-            leftV1.addScaledVector(perp2, -halfTrackWidth);
 
             let leftV2 = path.curves[i].v2.clone();
             leftV2.addScaledVector(perp2, -halfTrackWidth);

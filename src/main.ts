@@ -3,6 +3,7 @@ import { startUI } from "./ui/UI.tsx";
 
 import * as THREE from "three";
 import {createCoasterMesh} from "./coaster-mesh.js";
+import {exampleCoasterPath} from "./example-coaster.js";
 
 const app = App();
 
@@ -12,13 +13,7 @@ app.setup(({scene}) => {
 
 
   // testing nonsense for coaster mesh
-  var path = new THREE.CurvePath();
-  path.add(new THREE.LineCurve3(new THREE.Vector3(-5, 10, 0), new THREE.Vector3(5, 10, 0)));
-  path.add(new THREE.QuadraticBezierCurve3(
-    new THREE.Vector3(5, 10, 0),
-    new THREE.Vector3(10, 10, 0),
-    new THREE.Vector3(10, 15, 10)
-  ));
+  var path = exampleCoasterPath();
 
   // var testTubeGeometry = new THREE.TubeGeometry(path, 64, 0.1);
   // var testTubeMat = new THREE.MeshBasicMaterial();
