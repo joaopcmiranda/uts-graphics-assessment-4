@@ -1,41 +1,34 @@
-import * as THREE from "three";
-
-
-export {setupCartController};
-export {updateCartPosition};
+import { CurvePath, Vector3 } from "three";
 
 
 // Things to go on the GUI
-var gravity = 100;
-var friction = 0.005;
-var lift_speed = 10;
+const gravity = 100;
+const friction = 0.005;
+const lift_speed = 10;
 
 
+let progress = 0;
+let velocity = 0;
+let track_length = 1;
 
 
-var progress = 0;
-var velocity = 0;
-var track_length = 1;
-
-
-var setupCartController = function(track) {
+export const setupCartController = (track: CurvePath<Vector3>) => {
     // To be run once at the start
     // takes a CurvePath track
     track_length = track.getLength();
-}
+};
 
 
-
-var updateCartPosition = function(track, delta) {
+export const updateCartPosition = (track: CurvePath<Vector3>) => {
     // To be run every frame
 
 
     // Update velocity based on gravity & how steep the track we're on is
     let slope = track.getTangent(progress / track_length).y;
-    
+
     // velocity -= gravity * slope * delta;
     velocity -= gravity * slope * 0.01; // test
-    
+
     // friction
     velocity *= (1 - (friction));
 
@@ -58,4 +51,4 @@ var updateCartPosition = function(track, delta) {
 
     return progress; // for rendering the cart / moving the camera elsewhere
 
-}
+};

@@ -1,12 +1,11 @@
 import { App } from "./core/App.ts";
 import { startUI } from "./ui/UI.ts";
+import * as THREE from "three";
 import { AmbientLight, DirectionalLight } from "three";
 import { Landscape } from "./heightMap/Landscape.ts";
-
-import * as THREE from "three";
-import {createCoasterMesh} from "./coaster-mesh.js";
-import {exampleCoasterPath} from "./example-coaster.js";
-import {setupCartController, updateCartPosition} from "./cart-location.js";
+import { createCoasterMesh } from "./coaster-mesh.js";
+import { exampleCoasterPath } from "./example-coaster.js";
+import { setupCartController, updateCartPosition } from "./cart-location.js";
 
 const app = App();
 
@@ -16,23 +15,25 @@ const parameters = startUI((_parameters) => {
 });
 
 
-var path = exampleCoasterPath();
+const path = exampleCoasterPath();
 path.arcLengthDivisions = 1000;
-  const landscape = new Landscape(parameters);
 
 // var testBox = new THREE.Mesh(
 //   new THREE.BoxGeometry(1, 1, 1),
 //   new THREE.MeshBasicMaterial()
 // );
 
-var cartProgress = 0;
-var trackLength = path.getLength();
+let cartProgress = 0;
+const trackLength = path.getLength();
 
+const firstPersonMode = true;
 
-var firstPersonMode = true;
+await app.setup(async ({ scene }) => {
 
-app.setup(({scene}) => {
+  // Landscape
+  const landscape = new Landscape(parameters);
   scene.add(landscape);
+
   // Adding an ambient light
   const ambientLight = new AmbientLight(0xffffff, 0.6);
   scene.add(ambientLight);
@@ -42,9 +43,8 @@ app.setup(({scene}) => {
   dirLight.position.set(0, 3, 0);
   scene.add(dirLight);
 
-  scene.add(landscape);
   // testing nonsense for coaster mesh
- 
+
 
   setupCartController(path);
 
@@ -54,20 +54,19 @@ app.setup(({scene}) => {
 
   // scene.add(new THREE.Mesh(testTubeGeometry, testTubeMat));
 
-  var model = createCoasterMesh(path);
+  const model = createCoasterMesh(path);
   scene.add(model);
 
 
-  var ambient = new THREE.AmbientLight(0x808080);
+  const ambient = new THREE.AmbientLight(0x808080);
   scene.add(ambient);
 
-  var light = new THREE.PointLight(0xffffff, 50);
+  const light = new THREE.PointLight(0xffffff, 50);
   light.position.set(0, 15, 0);
   scene.add(light);
 
 
 });
-
 
 
 app.loop(({ clock, camera, orbit }) => {
@@ -83,7 +82,7 @@ app.loop(({ clock, camera, orbit }) => {
   }
 
   if (firstPersonMode) {
-    cartProgress = updateCartPosition(path, clock.getDelta());
+    cartProgress = updateCartPosition(path);
     let next_pos = path.getPoint(cartProgress / trackLength);
     // testBox.position.set(next_pos.x, next_pos.y, next_pos.z);
     camera.position.set(next_pos.x, next_pos.y + 5, next_pos.z);
