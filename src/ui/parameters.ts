@@ -1,6 +1,8 @@
 export type Parameters = {
   paused: boolean;
   wireframe: boolean;
+  showCoaster: boolean;
+  fpv: boolean;
   xLength: number;
   zLength: number;
   polyCount: number;
@@ -9,18 +11,32 @@ export type Parameters = {
   roughness: number;
 }
 
-export const fields: Record<keyof Parameters, Field> = {
+export const fields: { [key in keyof Parameters]: Field} = {
   paused: {
     type: "boolean",
     name: "Paused Simulation",
     default: false
   },
-  wireframe: {
+
+  showCoaster:{
     type: "boolean",
-    name: "Wireframe",
+    name: "Show Coaster",
+    folder: "Coaster",
+    default: true
+  },
+  fpv: {
+    type: "boolean",
+    name: "First Person View",
+    folder: "Coaster",
     default: false
   },
 
+  wireframe: {
+    type: "boolean",
+    name: "Wireframe",
+    folder: "Terrain",
+    default: false
+  },
   xLength: {
     type: "number",
     name: "X Length",

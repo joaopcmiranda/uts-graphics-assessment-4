@@ -133,11 +133,17 @@ export const App = () => {
     loop(_loopFn);
   }
 
+  const resetCameraToDefault = () => {
+    _camera.position.set(0, 150, 150);
+    _camera.lookAt(0, 0, 0);
+  }
+
   // expose setup and loop function
   return {
     setup,
     loop,
-    reset
+    reset,
+    resetCameraToDefault
   }
 }
 

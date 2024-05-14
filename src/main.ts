@@ -9,9 +9,16 @@ import { setupCartController, updateCartPosition } from "./cart-location.js";
 
 const app = App();
 
-const parameters = startUI((_parameters) => {
-  console.log(parameters)
-  app.reset();
+const parameters = startUI((changes, _parameters) => {
+  if ( // add here any changes that should not reset the app
+    changes.paused === undefined
+    && changes.fpv === undefined
+  ) {
+    app.reset();
+  }
+  if (changes.fpv === false){
+    app.resetCameraToDefault();
+  }
 });
 
 
@@ -26,8 +33,6 @@ path.arcLengthDivisions = 1000;
 let cartProgress = 0;
 const trackLength = path.getLength();
 
-const firstPersonMode = true;
-
 await app.setup(async ({ scene }) => {
 
   // Landscape
@@ -40,24 +45,15 @@ await app.setup(async ({ scene }) => {
 
   // Adding a directional light
   const dirLight = new DirectionalLight(0xffffff, 0.6);
-  dirLight.position.set(0, 3, 0);
+  dirLight.position.set(6, 3, 0);
   scene.add(dirLight);
 
-  // testing nonsense for coaster mesh
+  if(parameters.showCoaster){
+    setupCartController(path);
 
-
-  setupCartController(path);
-
-  // var testTubeGeometry = new THREE.TubeGeometry(path, 64, 0.1);
-  // var testTubeMat = new THREE.MeshBasicMaterial();
-  // testTubeMat.wireframe = true;
-
-  // scene.add(new THREE.Mesh(testTubeGeometry, testTubeMat));
-
-  const model = createCoasterMesh(path);
-  scene.add(model);
-
-
+    const model = createCoasterMesh(path);
+    scene.add(model);
+  }
   const ambient = new THREE.AmbientLight(0x808080);
   scene.add(ambient);
 
@@ -81,7 +77,7 @@ app.loop(({ clock, camera, orbit }) => {
     }
   }
 
-  if (firstPersonMode) {
+  if (parameters.fpv) {
     cartProgress = updateCartPosition(path);
     let next_pos = path.getPoint(cartProgress / trackLength);
     // testBox.position.set(next_pos.x, next_pos.y, next_pos.z);
