@@ -9,6 +9,9 @@ export type Parameters = {
   hillDensity: number;
   hillScale: number;
   roughness: number;
+  gravity: number;
+  friction: number;
+  liftSpeed: number;
 }
 
 export const fields: { [key in keyof Parameters]: Field} = {
@@ -29,6 +32,33 @@ export const fields: { [key in keyof Parameters]: Field} = {
     name: "First Person View",
     folder: "Coaster",
     default: false
+  },
+  gravity: {
+    type: "number",
+    name: "Gravity",
+    folder: "Coaster",
+    min: 0,
+    max: 200,
+    step: 0.1,
+    default: 10
+  },
+  friction: {
+    type: "number",
+    name: "Friction",
+    folder: "Coaster",
+    min: 0,
+    max: 0.1,
+    step: 0.001,
+    default: 0.005
+  },
+  liftSpeed: {
+    type: "number",
+    name: "Lift Speed",
+    folder: "Coaster",
+    min: 0,
+    max: 20,
+    step: 0.1,
+    default: 10
   },
 
   wireframe: {

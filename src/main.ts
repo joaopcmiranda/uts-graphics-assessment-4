@@ -13,6 +13,9 @@ const parameters = startUI((changes, _parameters) => {
   if ( // add here any changes that should not reset the app
     changes.paused === undefined
     && changes.fpv === undefined
+    && changes.gravity === undefined
+    && changes.friction === undefined
+    && changes.liftSpeed === undefined
   ) {
     app.reset();
   }
@@ -78,7 +81,7 @@ app.loop(({ clock, camera, orbit }) => {
   }
 
   if (parameters.fpv) {
-    cartProgress = updateCartPosition(path);
+    cartProgress = updateCartPosition(path, parameters);
     let next_pos = path.getPoint(cartProgress / trackLength);
     // testBox.position.set(next_pos.x, next_pos.y, next_pos.z);
     camera.position.set(next_pos.x, next_pos.y + 5, next_pos.z);
