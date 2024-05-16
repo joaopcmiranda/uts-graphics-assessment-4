@@ -140,8 +140,8 @@ export const App = () => {
 
   // expose setup and loop function
   return {
-    setup,
-    loop,
+    start: setup,
+    update: loop,
     reset,
     resetCameraToDefault
   }
