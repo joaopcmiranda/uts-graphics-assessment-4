@@ -9,14 +9,8 @@ import { setupCartController, updateCartPosition } from "./cart-location.js";
 
 const app = App();
 
-const parameters = startUI((changes, _parameters) => {
-  if ( // add here any changes that should not reset the app
-    changes.paused === undefined
-    && changes.coaster?.fpv === undefined
-    && changes.coaster?.gravity === undefined
-    && changes.coaster?.friction === undefined
-    && changes.coaster?.liftSpeed === undefined
-  ) {
+const parameters = startUI((changes, _parameters, field) => {
+  if (field?.requiresReset) {
     app.reset();
   }
   if (changes.coaster?.fpv === false){

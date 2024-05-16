@@ -1,5 +1,6 @@
-export type Field<T> = ({
-  name: string
+export type PrimitiveField = ({
+  name: string;
+  requiresReset?: boolean;
 } & ({
   type: "boolean",
   default: boolean;
@@ -19,20 +20,25 @@ export type Field<T> = ({
 } | {
   type: "color",
   default: string;
-} | {
-  type: "button",
-  onClick: (parent: T) => void;
 }));
 
-export type Folder<O> = {
+type ButtonField<T> = {
   name: string;
-  type: "folder",
-  children: { [key in keyof O]?: Field<O> | Folder<O[key]> };
+  type: "button",
+  onClick: (parent: T) => void;
 }
 
-export type GUIFields<T> = { [key in keyof T]: Field<T> | Folder<T[key]> };
+type Folder<O> = {
+  name: string;
+  type: "folder",
+  children: { [key in keyof O]?: Field<O, key> };
+}
 
-export const getDefaultValueFromFields = <T extends Record<string, any>>(fieldsObject: { [key in keyof T]?: Field<T> | Folder<T[key]> }): T => {
+export type Field<O, K extends keyof O> = PrimitiveField | ButtonField<O> | Folder<O[K]>;
+
+export type GUIFields<T> = { [key in keyof T]: PrimitiveField | Folder<T[key]> };
+
+export const getDefaultValueFromFields = <T extends Record<string, any>>(fieldsObject: { [key in keyof T]?: Field<T, key> }): T => {
   return Object.keys(fieldsObject).reduce((params, key) => {
     const field = fieldsObject[key as keyof T];
     if (field && field.type === 'folder' && field.children) {

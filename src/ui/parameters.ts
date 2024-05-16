@@ -10,7 +10,8 @@ export type Parameters = {
     liftSpeed: number;
   },
   landscape: {
-    wireframe: boolean;
+    regenerate: () => void;
+    wireframe: string;
     xLength: number;
     zLength: number;
     polyCount: number;
@@ -69,9 +70,16 @@ export const fields: GUIFields<Parameters> = {
   },
 
   landscape: {
-    name: "Terrain",
+    name: "Landscape",
     type: "folder",
     children: {
+      regenerate:{
+        type: "button",
+        name: "Regenerate Height Map",
+        onClick: (_: Parameters['landscape']) => {
+          console.log("Regenerate");
+        }
+      },
       wireframe: {
         type: "boolean",
         name: "Wireframe",
