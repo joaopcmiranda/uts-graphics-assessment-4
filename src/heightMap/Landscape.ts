@@ -1,36 +1,45 @@
-import { Mesh, MeshLambertMaterial, Vector2 } from 'three';
+import { BufferGeometry, Mesh, MeshLambertMaterial, Vector2 } from 'three';
 import { HeightMap } from "./HeightMap.ts";
 import { generateGeometryFromHeightMap } from "./generateGeometryFromHeightMap.ts";
+import { Parameters } from "../ui/parameters.ts";
 
-export type LandscapeParameters = {
-  xLength: number;
-  zLength: number;
-  polyCount: number;
-  hillDensity: number;
-  hillScale: number;
-  roughness: number;
-  wireframe: boolean;
-}
+export class Landscape extends Mesh<BufferGeometry, MeshLambertMaterial> {
+  private heightMap: HeightMap;
 
-export class Landscape extends Mesh {
-  constructor({
-    xLength: _xLength = 1,
-    zLength: _zLength = 1,
-    polyCount: _polyCount = 10,
-    hillDensity: _hillDensity = 10,
-    hillScale: _hillScale = 10,
-    roughness: _roughness = 10,
-    wireframe: _wireframe = false
-  }: LandscapeParameters) {
+  constructor(private parameters: Parameters['landscape'], wireframe: boolean) {
+    super();
 
-    const xLength = Math.floor(_xLength);
-    const zLength = Math.floor(_zLength);
-    const polyCount = Math.floor(_polyCount);
-    const hillDensity = Math.floor(_hillDensity);
-    const hillScale = Math.floor(_hillScale);
-    const roughness = Math.floor(_roughness);
+    this.heightMap = this.generateHeightMap();
+    this.geometry = this.generateGeometry();
 
-    const heightMap = HeightMap.generate(
+    this.material = new MeshLambertMaterial({ color: 0xcccccc });
+    this.material.wireframe = wireframe;
+  }
+
+  regenerateHeightMap() {
+    this.heightMap = this.generateHeightMap();
+    this.geometry = this.generateGeometry();
+  }
+
+  updateGeometry() {
+    console.log('updateGeometry')
+    this.geometry.dispose();
+    this.geometry = this.generateGeometry();
+  }
+
+  setWireframe(wireframe: boolean) {
+    this.material.wireframe = wireframe;
+  }
+
+  private generateHeightMap(): HeightMap {
+
+    const xLength = Math.floor(this.parameters.heightMap.xLength);
+    const zLength = Math.floor(this.parameters.heightMap.zLength);
+    const polyCount = Math.floor(this.parameters.polyCount);
+    const hillDensity = Math.floor(this.parameters.heightMap.hillDensity);
+    const roughness = Math.floor(this.parameters.heightMap.roughness);
+
+    return HeightMap.generate(
       new Vector2(
         xLength * polyCount,
         zLength * polyCount
@@ -38,22 +47,20 @@ export class Landscape extends Mesh {
       hillDensity,
       roughness
     );
+  }
 
-    console.log(heightMap);
+  private generateGeometry(): BufferGeometry {
 
-    const geometry = generateGeometryFromHeightMap({
-      heightMap,
+    const xLength = Math.floor(this.parameters.heightMap.xLength);
+    const zLength = Math.floor(this.parameters.heightMap.zLength);
+    const polyCount = Math.floor(this.parameters.polyCount);
+
+    return generateGeometryFromHeightMap({
+      heightMap: this.heightMap,
       xLength: xLength,
       zLength: zLength,
       density: polyCount,
-      heightScale: hillScale
-    })
-
-    const material = new MeshLambertMaterial({ color: 0xcccccc });
-    material.wireframe = _wireframe;
-
-    super(geometry, material);
+      scale: this.parameters.scale
+    });
   }
-
-
 }

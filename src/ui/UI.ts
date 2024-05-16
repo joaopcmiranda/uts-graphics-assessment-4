@@ -1,16 +1,20 @@
-import { GUI } from 'lil-gui'
-import { _parameters, fields, Parameters } from "./parameters.ts";
-import { Field, PrimitiveField } from "./Field.ts";
+import { Controller, GUI } from 'lil-gui';
+import { fields, Parameters, Props } from "./parameters.ts";
+import { Field, getDefaultValueFromFields, PrimitiveField } from "./Field.ts";
 
 type OnUpdateParameters = (changes: Partial<Parameters>, parameters: Parameters, field: PrimitiveField | null) => void;
-
-export const startUI = (onUpdateParameters?: OnUpdateParameters): Parameters => {
+let _parameters: Parameters;
+export const startUI = (props: Props, onUpdateParameters?: OnUpdateParameters): Parameters => {
 
   const gui = new GUI();
 
+  const _fields = fields(props);
+
+  _parameters = getDefaultValueFromFields(_fields);
+
   // build controls
-  for (const key of Object.keys(fields) as (keyof Parameters)[]) {
-    addControl<Parameters, typeof key>(gui, _parameters, key, fields[key], onUpdateParameters);
+  for (const key of Object.keys(_fields) as (keyof Parameters)[]) {
+    addControl<Parameters, typeof key>(gui, _parameters, key, _fields[key], onUpdateParameters);
   }
 
   return _parameters;
@@ -19,16 +23,26 @@ export const startUI = (onUpdateParameters?: OnUpdateParameters): Parameters => 
 
 const addControl = <T extends object, K extends keyof T>(gui: GUI, paramObject: T, key: K, field: Field<T, K>, onUpdateParameters?: OnUpdateParameters) => {
   switch (field.type) {
-    case "boolean":
-      return gui.add(paramObject, key.toString()).name(field.name).onChange(() => { onUpdateParameters?.({ [key]: paramObject[key] }, _parameters, field); });
-    case "number":
-      return gui.add(paramObject, key.toString(), field.min, field.max, field.step).name(field.name).onChange(() => { onUpdateParameters?.({ [key]: paramObject[key] }, _parameters, field); });
-    case "select":
-      return gui.add(paramObject, key.toString(), field.options).name(field.name).onChange(() => { onUpdateParameters?.({ [key]: paramObject[key] }, _parameters, field); });
-    case "string":
-      return gui.add(paramObject, key.toString()).name(field.name).onChange(() => { onUpdateParameters?.({ [key]: paramObject[key] }, _parameters, field); });
-    case "color":
-      return gui.addColor(paramObject, key.toString()).name(field.name).onChange(() => { onUpdateParameters?.({ [key]: paramObject[key] }, _parameters, field); });
+    case "boolean": {
+      const controller = gui.add(paramObject, key.toString()).name(field.name);
+      return setOnChange(controller, paramObject, key, field, onUpdateParameters);
+    }
+    case "number": {
+      const controller = gui.add(paramObject, key.toString(), field.min, field.max, field.step).name(field.name);
+      return setOnChange(controller, paramObject, key, field, onUpdateParameters);
+    }
+    case "select": {
+      const controller = gui.add(paramObject, key.toString(), field.options).name(field.name);
+      return setOnChange(controller, paramObject, key, field, onUpdateParameters);
+    }
+    case "string": {
+      const controller = gui.add(paramObject, key.toString()).name(field.name);
+      return setOnChange(controller, paramObject, key, field, onUpdateParameters);
+    }
+    case "color": {
+      const controller = gui.addColor(paramObject, key.toString()).name(field.name);
+      return setOnChange(controller, paramObject, key, field, onUpdateParameters);
+    }
     case "button":
       return gui.add(paramObject, key.toString()).name(field.name);
     case "folder":
@@ -45,3 +59,8 @@ const addControl = <T extends object, K extends keyof T>(gui: GUI, paramObject: 
   }
 }
 
+const setOnChange = <T extends object, K extends keyof T>(controller: Controller, paramObject: T, key: K, field: PrimitiveField, onUpdateParameters?: OnUpdateParameters) => {
+  console.log(field);
+  return field.slowUpdate ? controller.onFinishChange(() => { onUpdateParameters?.({ [key]: paramObject[key] }, _parameters, field); }) :
+    controller.onChange(() => { onUpdateParameters?.({ [key]: paramObject[key] }, _parameters, field); });
+}

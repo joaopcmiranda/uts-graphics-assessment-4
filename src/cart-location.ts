@@ -16,7 +16,7 @@ export const setupCartController = (track: CurvePath<Vector3>) => {
 };
 
 
-export const updateCartPosition = (track: CurvePath<Vector3>, {gravity, friction, liftSpeed}: Parameters) => {
+export const updateCartPosition = (track: CurvePath<Vector3>, {gravity, friction, liftSpeed}: Parameters['coaster']) => {
     // To be run every frame
 
 

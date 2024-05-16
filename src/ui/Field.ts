@@ -1,6 +1,7 @@
 export type PrimitiveField = ({
   name: string;
   requiresReset?: boolean;
+  slowUpdate?: boolean;
 } & ({
   type: "boolean",
   default: boolean;
@@ -22,10 +23,10 @@ export type PrimitiveField = ({
   default: string;
 }));
 
-type ButtonField<T> = {
+type ButtonField = {
   name: string;
   type: "button",
-  onClick: (parent: T) => void;
+  onClick: () => void;
 }
 
 type Folder<O> = {
@@ -34,7 +35,7 @@ type Folder<O> = {
   children: { [key in keyof O]?: Field<O, key> };
 }
 
-export type Field<O, K extends keyof O> = PrimitiveField | ButtonField<O> | Folder<O[K]>;
+export type Field<O, K extends keyof O> = PrimitiveField | ButtonField | Folder<O[K]>;
 
 export type GUIFields<T> = { [key in keyof T]: PrimitiveField | Folder<T[key]> };
 
@@ -45,6 +46,7 @@ export const getDefaultValueFromFields = <T extends Record<string, any>>(fieldsO
       params[key] = getDefaultValueFromFields(field.children);
     } else if (field) {
       if (field.type !== "folder" && field.type !== "button") {params[key] = field.default;}
+      if (field.type === "button") {params[key] = field.onClick;}
     }
     return params;
   }, {} as any);

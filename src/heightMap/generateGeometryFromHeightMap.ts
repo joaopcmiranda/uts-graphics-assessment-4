@@ -5,11 +5,11 @@ export const generateGeometryFromHeightMap = (params: {
   heightMap: HeightMap,
   xLength: number,
   zLength: number,
-  heightScale: number,
+  scale: number,
   density: number
 }): BufferGeometry => {
 
-  const { heightMap, xLength, zLength, heightScale, density } = params;
+  const { heightMap, xLength, zLength, scale, density } = params;
 
   // Calculate the number of points in the x and z directions
   const xPointCount = Math.floor(xLength * density);
@@ -27,7 +27,7 @@ export const generateGeometryFromHeightMap = (params: {
 
   for (let i = 0; i < xPointCount; i += 1) {
     for (let j = 0; j < zPointCount; j += 1) {
-      heightMatrix[i * zPointCount + j] = heightMap.getHeightAt(i / xPointCount, j / zPointCount) * heightScale;
+      heightMatrix[i * zPointCount + j] = heightMap.getHeightAt(i / xPointCount, j / zPointCount) * scale;
     }
   }
 
@@ -49,10 +49,10 @@ export const generateGeometryFromHeightMap = (params: {
       const endX = origin.x + ((i + 1) * xRatio);
       const endZ = origin.z + ((j + 1) * zRatio);
 
-      const a = { x: startX, y: origin.y + (heightMatrix[i * zPointCount + j]) * heightScale, z: startZ };
-      const b = { x: endX, y: origin.y + (heightMatrix[(i + 1) * zPointCount + j]) * heightScale, z: startZ };
-      const c = { x: startX, y: origin.y + (heightMatrix[i * zPointCount +(j + 1)]) * heightScale, z: endZ };
-      const d = { x: endX, y: origin.y + (heightMatrix[(i + 1) * zPointCount +(j + 1)]) * heightScale, z: endZ };
+      const a = { x: startX, y: origin.y + (heightMatrix[i * zPointCount + j]) * scale, z: startZ };
+      const b = { x: endX, y: origin.y + (heightMatrix[(i + 1) * zPointCount + j]) * scale, z: startZ };
+      const c = { x: startX, y: origin.y + (heightMatrix[i * zPointCount +(j + 1)]) * scale, z: endZ };
+      const d = { x: endX, y: origin.y + (heightMatrix[(i + 1) * zPointCount +(j + 1)]) * scale, z: endZ };
 
       pointArray[vertexIndex++] = c.x
       pointArray[vertexIndex++] = c.y
