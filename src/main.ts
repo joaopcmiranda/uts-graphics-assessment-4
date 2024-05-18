@@ -6,6 +6,7 @@ import { setupCartController, updateCartPosition } from "./cart-location.js";
 import { Props } from "./ui/parameters.ts";
 import { Landscape } from "./heightMap/Landscape.ts";
 import { CoasterMesh } from "./tracks/CoasterMesh.ts";
+import { SkyBox } from "./skybox/SkyBox.ts";
 
 const app = App();
 
@@ -37,7 +38,6 @@ const parameters = startUI(uiProps, (changes, _parameters, field) => {
   // Update the landscape's geometry if the polycount or scale changes
   if (field?.name === 'Poly Count'
     || field?.name === 'Hill Scale') {
-    console.log("Changes")
     landscape.updateGeometry();
   }
 });
@@ -71,6 +71,10 @@ await app.start(async ({ scene }) => {
 
     scene.add(coasterTracks);
   }
+
+  // Skybox
+  const skybox = new SkyBox();
+  scene.add(skybox);
 
   // Adding an ambient light
   const ambientLight = new AmbientLight(0xffffff, 0.6);

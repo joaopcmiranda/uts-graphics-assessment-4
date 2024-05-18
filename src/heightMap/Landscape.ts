@@ -22,7 +22,6 @@ export class Landscape extends Mesh<BufferGeometry, MeshLambertMaterial> {
   }
 
   updateGeometry() {
-    console.log('updateGeometry')
     this.geometry.dispose();
     this.geometry = this.generateGeometry();
   }

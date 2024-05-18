@@ -193,7 +193,7 @@ export const fields = (props: Props): GUIFields<Parameters> => ({
         min: 1,
         max: 100,
         step: 1,
-        default: 10,
+        default: 1,
         slowUpdate: true
       },
       scale: {
@@ -202,7 +202,7 @@ export const fields = (props: Props): GUIFields<Parameters> => ({
         min: 1,
         max: 100,
         step: 1,
-        default: 10,
+        default: 20,
         slowUpdate: true
       },
       heightMap: {
@@ -222,7 +222,7 @@ export const fields = (props: Props): GUIFields<Parameters> => ({
             min: 10,
             max: 1000,
             step: 1,
-            default: 100
+            default: 200
           },
           zLength: {
             type: "number",
@@ -230,7 +230,7 @@ export const fields = (props: Props): GUIFields<Parameters> => ({
             min: 10,
             max: 1000,
             step: 1,
-            default: 100
+            default: 200
           },
           hillDensity: {
             type: "number",
@@ -246,7 +246,7 @@ export const fields = (props: Props): GUIFields<Parameters> => ({
             min: 1,
             max: 10,
             step: 1,
-            default: 5
+            default: 7
           }
         }
       },

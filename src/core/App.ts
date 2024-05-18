@@ -35,7 +35,7 @@ export const App = () => {
   // Scene defaults set up
   _scene = new Scene();
 
-  _camera = new PerspectiveCamera(45, windowWidth / window.innerHeight, 0.1, 1000);
+  _camera = new PerspectiveCamera(45, windowWidth / window.innerHeight, 0.1, 2000);
 
   _orbitControls = new OrbitControls(_camera, _renderer.domElement);
 
@@ -53,6 +53,7 @@ export const App = () => {
     // Input defaults set up
     _orbitControls.minDistance = 1;
     _orbitControls.maxPolarAngle = Math.PI / 2;
+    _orbitControls.maxDistance = 250;
 
     // Custom setup
     // allow custom overrides and any additional setup the user desires.

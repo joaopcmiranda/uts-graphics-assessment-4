@@ -60,7 +60,6 @@ const addControl = <T extends object, K extends keyof T>(gui: GUI, paramObject: 
 }
 
 const setOnChange = <T extends object, K extends keyof T>(controller: Controller, paramObject: T, key: K, field: PrimitiveField, onUpdateParameters?: OnUpdateParameters) => {
-  console.log(field);
   return field.slowUpdate ? controller.onFinishChange(() => { onUpdateParameters?.({ [key]: paramObject[key] }, _parameters, field); }) :
     controller.onChange(() => { onUpdateParameters?.({ [key]: paramObject[key] }, _parameters, field); });
 }

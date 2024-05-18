@@ -201,7 +201,6 @@ export class HeightMap {
     // Create a flat typed array instead of a 2D array
     const heightMap = new Float32Array(xLength * zLength);
 
-    console.log("Flat height map", xLength, zLength, height);
     // Initialize the array with the height
     heightMap.fill(height);
 
