@@ -1,5 +1,11 @@
-import { Clock, PerspectiveCamera, Scene, Vector3, WebGLRenderer } from "three";
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import * as THREE from "three";
+import * as Orbit from 'three/addons/controls/OrbitControls.js';
+
+const { Clock, PerspectiveCamera, Scene, Vector3, WebGLRenderer } = THREE;
+type WebGLRenderer = THREE.WebGLRenderer;
+type PerspectiveCamera = THREE.PerspectiveCamera;
+type Scene = THREE.Scene;
+type Clock = THREE.Clock;
 
 
 // Main function, responsible for setting up the app, and running the loop
@@ -9,7 +15,7 @@ export const App = () => {
   // declare variables for WebGL renderer, scene, input and perspective camera
   let _renderer: WebGLRenderer;
   let _scene: Scene;
-  let _orbitControls: OrbitControls;
+  let _orbitControls: Orbit.OrbitControls;
   let _camera: PerspectiveCamera;
   let _setupFn: SetupFunction | undefined
   let _loopFn: LoopFunction
@@ -35,9 +41,9 @@ export const App = () => {
   // Scene defaults set up
   _scene = new Scene();
 
-  _camera = new PerspectiveCamera(45, windowWidth / window.innerHeight, 0.1, 2000);
+  _camera = new PerspectiveCamera(45, windowWidth / window.innerHeight, 0.1, 3000);
 
-  _orbitControls = new OrbitControls(_camera, _renderer.domElement);
+  _orbitControls = new Orbit.OrbitControls(_camera, _renderer.domElement);
 
   // setup function, responsible for setting up renderer, scene, input, camera and running the user's setup function
   const setup = async (run?: SetupFunction) => {
@@ -53,13 +59,18 @@ export const App = () => {
     // Input defaults set up
     _orbitControls.minDistance = 1;
     _orbitControls.maxPolarAngle = Math.PI / 2;
-    _orbitControls.maxDistance = 250;
+    _orbitControls.maxDistance = 1000;
 
     // Custom setup
     // allow custom overrides and any additional setup the user desires.
     // Runs the 'run' function, if provided, ONCE
     try {
-      const runResult = await run?.({ renderer: _renderer, scene: _scene, orbit: _orbitControls, camera: _camera }) ?? {}
+      const runResult = await run?.({
+        renderer: _renderer,
+        scene: _scene,
+        orbit: _orbitControls,
+        camera: _camera
+      }) ?? {}
 
       return {
         renderer: _renderer,
@@ -151,16 +162,21 @@ export const App = () => {
 
 type SetupFunction = (defaults: {
   renderer: WebGLRenderer;
-  orbit: OrbitControls;
+  orbit: Orbit.OrbitControls;
   camera: PerspectiveCamera;
   scene: Scene
-}) => Promise<{ renderer?: WebGLRenderer; scene?: Scene; input?: ReturnType<any>; camera?: PerspectiveCamera }> | Promise<void>
+}) => Promise<{
+  renderer?: WebGLRenderer;
+  scene?: Scene;
+  input?: ReturnType<any>;
+  camera?: PerspectiveCamera
+}> | Promise<void>
 
 type LoopFunction = ({ clock, delta, renderer, orbit, camera, scene }: {
   clock: Clock,
   delta: number,
   renderer: WebGLRenderer,
-  orbit: OrbitControls,
+  orbit: Orbit.OrbitControls,
   camera: PerspectiveCamera,
   scene: Scene
 }) => void

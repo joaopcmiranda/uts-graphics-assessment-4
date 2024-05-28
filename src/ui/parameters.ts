@@ -33,15 +33,35 @@ export type Parameters = {
     liftSpeed: number;
   },
   landscape: {
-    heightMap: {
-      regenerate: () => void;
-      xLength: number;
-      zLength: number;
-      hillDensity: number;
-      roughness: number;
-    },
+    normalMap: boolean;
+    xLength: number;
+    zLength: number;
+    hillDensity: number;
+    roughness: number;
     scale: number;
     polyCount: number;
+    generations: number;
+    amplitudeDecayRate: number;
+    offset: number;
+    edgeOffset: number;
+    edgeOffsetThreshold: number;
+    uTextureDensity: number;
+    grassSeed: number;
+    terrainSeed: number;
+    stoneThreshold: number;
+    fogDistance: number;
+  },
+  lighting:{
+    ambientLight: {
+      color: string;
+      intensity: number;
+    },
+    sun: {
+      color: string;
+      intensity: number;
+      cardinalAngle: number;
+      heightAngle: number;
+    }
   }
 }
 
@@ -55,9 +75,8 @@ export type Parameters = {
  * - 2 way binding is done by the GUI
  * - this is passed only once at the start of the UI.
  * - Use only parameters to update the GUI
-  */
+ */
 export type Props = {
-  onGenerateHeightMap: () => void;
 }
 
 /**
@@ -65,10 +84,10 @@ export type Props = {
  *
  * This is the object that defines the fields that will be displayed in the GUI.
  *
- * @param props - Props passed to the GUI for interaction
+ * @param _props - Props passed to the GUI for interaction
  * e.g. { onGenerateHeightMap: () => void }
  */
-export const fields = (props: Props): GUIFields<Parameters> => ({
+export const fields = (_props: Props): GUIFields<Parameters> => ({
   paused: {
     type: "boolean",
     name: "Paused Simulation",
@@ -182,17 +201,45 @@ export const fields = (props: Props): GUIFields<Parameters> => ({
       }
     }
   },
-
   landscape: {
     name: "Landscape",
     type: "folder",
     children: {
+      normalMap: {
+        type: "boolean",
+        name: "Normal Map",
+        default: false
+      },
+      terrainSeed: {
+        type: "number",
+        name: "Terrain Seed",
+        default: 43758.5453,
+        slowUpdate: true
+      },
+      xLength: {
+        type: "number",
+        name: "X Length",
+        min: 100,
+        max: 2000,
+        step: 100,
+        default: 2000,
+        slowUpdate: true
+      },
+      zLength: {
+        type: "number",
+        name: "Z Length",
+        min: 100,
+        max: 2000,
+        step: 100,
+        default: 2000,
+        slowUpdate: true
+      },
       polyCount: {
         type: "number",
         name: "Poly Count",
-        min: 1,
-        max: 100,
-        step: 1,
+        min: 0.1,
+        max: 2,
+        step: 0.1,
         default: 1,
         slowUpdate: true
       },
@@ -200,56 +247,170 @@ export const fields = (props: Props): GUIFields<Parameters> => ({
         type: "number",
         name: "Hill Scale",
         min: 1,
+        max: 1000,
+        step: 1,
+        default: 200,
+        slowUpdate: true
+      },
+      hillDensity: {
+        type: "number",
+        name: "Hill Density",
+        min: 1,
+        max: 20,
+        step: 1,
+        default: 2,
+        slowUpdate: true
+      },
+      roughness: {
+        type: "number",
+        name: "Roughness",
+        min: 1,
+        max: 2,
+        step: 0.01,
+        default: 1.5,
+        slowUpdate: true
+      },
+      generations: {
+        type: "number",
+        name: "Generations",
+        min: 1,
         max: 100,
         step: 1,
         default: 20,
         slowUpdate: true
       },
-      heightMap: {
+      amplitudeDecayRate: {
+        type: "number",
+        name: "Amplitude Decay Rate",
+        min: 1,
+        max: 5,
+        step: 0.1,
+        default: 1.5,
+        slowUpdate: true
+      },
+      offset: {
+        type: "number",
+        name: "Offset",
+        min: -1000,
+        max: 1000,
+        step: 1,
+        default: -170,
+        slowUpdate: true
+      },
+      edgeOffset: {
+        type: "number",
+        name: "Edge Offset",
+        min: 0,
+        max: 1000,
+        step: 1,
+        default: 200,
+        slowUpdate: true
+      },
+      edgeOffsetThreshold: {
+        type: "number",
+        name: "Edge Offset Threshold",
+        min: 0,
+        max: 1,
+        step: 0.01,
+        default: 0.4,
+        slowUpdate: true
+      },
+      uTextureDensity: {
+        type: "number",
+        name: "Texture scale",
+        min: 1,
+        max: 1000,
+        step: 1,
+        default: 100,
+        slowUpdate: true
+      },
+      grassSeed: {
+        type: "number",
+        name: "Grass placement seed",
+        min: 0,
+        max: 1,
+        step: 0.01,
+        default: 0.1,
+        slowUpdate: true
+      },
+      stoneThreshold: {
+        type: "number",
+        name: "Stone Threshold",
+        min: 0,
+        max: 1,
+        step: 0.01,
+        default: 0.07,
+        slowUpdate: true
+      },
+      fogDistance: {
+        type: "number",
+        name: "Fog Distance",
+        min: 0,
+        max: 1,
+        step: 0.01,
+        default: 0.9,
+        slowUpdate: true
+      }
+    }
+  },
+  lighting: {
+    name: "Lighting",
+    type: "folder",
+    children: {
+      ambientLight: {
+        name: "Ambient Light",
         type: "folder",
-        name: "Height Map",
         children: {
-          regenerate: {
-            type: "button",
-            name: "Regenerate",
-            onClick: () => {
-              props.onGenerateHeightMap();
-            }
+          color: {
+            type: "color",
+            name: "Color",
+            default: "#ffffff"
           },
-          xLength: {
+          intensity: {
             type: "number",
-            name: "X Length",
-            min: 10,
-            max: 1000,
-            step: 1,
-            default: 200
-          },
-          zLength: {
-            type: "number",
-            name: "Z Length",
-            min: 10,
-            max: 1000,
-            step: 1,
-            default: 200
-          },
-          hillDensity: {
-            type: "number",
-            name: "Hill Density",
-            min: 1,
-            max: 20,
-            step: 1,
-            default: 10
-          },
-          roughness: {
-            type: "number",
-            name: "Roughness",
-            min: 1,
-            max: 10,
-            step: 1,
-            default: 7
+            name: "Intensity",
+            min: 0,
+            max: 1,
+            step: 0.01,
+            default: 0.7
           }
         }
       },
+      sun: {
+        name: "Sun",
+        type: "folder",
+        children: {
+          color: {
+            type: "color",
+            name: "Color",
+            default: "#ffffff"
+          },
+          intensity: {
+            type: "number",
+            name: "Intensity",
+            min: 0,
+            max: 1,
+            step: 0.01,
+            default: 1
+          },
+          cardinalAngle: {
+            type: "number",
+            name: "Cardinal Angle",
+            min: 0,
+            max: 360,
+            step: 1,
+            default: 0
+          },
+          heightAngle: {
+            type: "number",
+            name: "Height Angle",
+            min: 0,
+            max: 90,
+            step: 1,
+            default: 45
+          }
+        }
+      }
     }
   }
 })

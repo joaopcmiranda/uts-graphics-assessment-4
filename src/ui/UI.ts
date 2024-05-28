@@ -1,4 +1,5 @@
-import { Controller, GUI } from 'lil-gui';
+import { Controller } from 'lil-gui';
+import GUI from 'lil-gui';
 import { fields, Parameters, Props } from "./parameters.ts";
 import { Field, getDefaultValueFromFields, PrimitiveField } from "./Field.ts";
 

@@ -1,7 +1,10 @@
-import { CurvePath, LineCurve3, QuadraticBezierCurve3 } from "three";
-import {Vector3} from "three";
+import * as THREE from "three";
 
-const exampleCoasterPath = (): CurvePath<Vector3> => {
+const { LineCurve3, QuadraticBezierCurve3, Vector3, CurvePath } = THREE;
+type CurvePath = THREE.CurvePath<Vector3>;
+type Vector3 = THREE.Vector3;
+
+const exampleCoasterPath = (): CurvePath => {
 
     // up hill
     // turn right

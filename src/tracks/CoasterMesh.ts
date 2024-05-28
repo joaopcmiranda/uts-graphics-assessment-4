@@ -1,18 +1,26 @@
-import {
-  BoxGeometry,
-  Color,
-  CurvePath,
+import * as THREE from "three";
+import { Parameters } from "../ui/parameters.ts";
+
+const {
   Group,
-  LineCurve3,
   Mesh,
   MeshPhongMaterial,
-  QuadraticBezierCurve3,
-  Texture,
+  Color,
   TextureLoader,
   TubeGeometry,
-  Vector3
-} from "three";
-import { Parameters } from "../ui/parameters.ts";
+  CurvePath,
+  Vector3,
+  LineCurve3,
+  QuadraticBezierCurve3,
+  BoxGeometry
+} = THREE;
+type CurvePath = THREE.CurvePath<Vector3>;
+type LineCurve3 = THREE.LineCurve3;
+type Mesh = THREE.Mesh;
+type MeshPhongMaterial = THREE.MeshPhongMaterial;
+type QuadraticBezierCurve3 = THREE.QuadraticBezierCurve3;
+type Texture = THREE.Texture;
+type Vector3 = THREE.Vector3;
 
 export class CoasterMesh extends Group {
 
@@ -43,7 +51,7 @@ export class CoasterMesh extends Group {
   crossbarMeshes: Mesh[] = [];
   supportMeshes: Mesh[] = [];
 
-  constructor(private path: CurvePath<Vector3>, private parameters: Parameters['coaster']) {
+  constructor(private path: CurvePath, private parameters: Parameters['coaster']) {
     super();
     this.trackMaterial = this.setUpHalfTrack();
     this.crossbarMaterial = this.setUpCrossbar();

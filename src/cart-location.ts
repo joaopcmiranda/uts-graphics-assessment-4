@@ -1,4 +1,7 @@
-import { CurvePath, Vector3 } from "three";
+import * as THREE from "three";
+
+type CurvePath<> = THREE.CurvePath<Vector3>;
+type Vector3 = THREE.Vector3;
 import { Parameters } from "./ui/parameters.ts";
 
 
@@ -9,14 +12,14 @@ let velocity = 0;
 let trackLength = 1;
 
 
-export const setupCartController = (track: CurvePath<Vector3>) => {
+export const setupCartController = (track: CurvePath) => {
     // To be run once at the start
     // takes a CurvePath track
     trackLength = track.getLength();
 };
 
 
-export const updateCartPosition = (track: CurvePath<Vector3>, {gravity, friction, liftSpeed}: Parameters['coaster']) => {
+export const updateCartPosition = (track: CurvePath, {gravity, friction, liftSpeed}: Parameters['coaster']) => {
     // To be run every frame
 
 
