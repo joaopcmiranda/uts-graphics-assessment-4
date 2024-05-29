@@ -73,10 +73,21 @@ export class Lighting extends Group {
     }
   }
 
-  private calculateSunPosition(cardinalDirection: number, elevation: number): Vector3 {
-    const x = Math.cos(cardinalDirection * Math.PI / 180) * Math.cos(elevation * Math.PI / 180);
-    const y = Math.sin(elevation * Math.PI / 180);
-    const z = Math.sin(cardinalDirection * Math.PI / 180) * Math.cos(elevation * Math.PI / 180);
+  /**
+   * Calculate the sun position based on the cardinal and height angles
+   * @param azimuth in degrees, 0-360
+   * @param inversePolar in degrees, 0-90 counts from the horizon to the top of the sky
+   * @private
+   */
+  private calculateSunPosition(azimuth: number, inversePolar: number): Vector3 {
+    const azimuthRad =  azimuth * Math.PI / 180;
+    const polarRad = (90 - inversePolar) * Math.PI / 180;
+    const radis = 500;
+
+    const x = radis * Math.sin(polarRad) * Math.cos(azimuthRad);
+    const y = radis * Math.cos(polarRad);
+    const z = radis * Math.sin(polarRad) * Math.sin(azimuthRad);
+
     return new Vector3(x, y, z);
   }
 }

@@ -1,6 +1,6 @@
+uniform vec2 resolution;
 uniform float opacity;
 uniform float shininess;
-uniform float uAmbientLightIntensity;
 uniform float uDecayRate;
 uniform float uEdgeOffset;
 uniform float uEdgeOffsetThreshold;
@@ -11,7 +11,6 @@ uniform float uInitialFrequency;
 uniform float uOffset;
 uniform float uRoughness;
 uniform float uStoneThreshold;
-uniform float uSunIntensity;
 uniform float uTextureDensity;
 uniform int uGenerations;
 uniform sampler2D uGrass1Texture;
@@ -32,17 +31,12 @@ uniform sampler2D uStoneTextureRoughness;
 uniform vec3 diffuse;
 uniform vec3 emissive;
 uniform vec3 specular;
-uniform vec3 uAmbientLightColor;
-uniform vec3 uSunColor;
-uniform vec3 uSunPosition;
-varying float vFlatness;
 varying vec2 vUv;
 varying vec3 vPosition;
 
 float bias(float b, float x) {
     return pow(x, log(b) / log(0.5));
 }
-
 
 float noise(vec2 uv0, float seed) {
     return fract(sin(dot(uv0, vec2(12.9898, 78.233))) * seed);
@@ -94,9 +88,7 @@ float getHeight(vec2 uv) {
 
     vec2 centeredUv = uv * 2.0 - 1.0;
 
-    if (length(centeredUv) > uEdgeOffsetThreshold) {
-        height += smoothstep(0., 1., bias(.1, length(centeredUv))) * uEdgeOffset;
-    }
+    height += smoothstep(0., 1., bias(.1, length(centeredUv))) * uEdgeOffset;
 
     return height;
 
@@ -110,4 +102,15 @@ vec3 getNormal(vec2 uv, float d) {
     vec3 edge2 = vec3(neighbour2 - uv, getHeight(neighbour2) - getHeight(uv));
 
     return normalize(cross(edge1, edge2));
+}
+
+
+float getFlatness(vec2 uv, float d) {
+    vec3 normal = getNormal(uv, d);
+    //compare with vector pointing up
+    return dot(normal, vec3(0.0, 0.0, 1.0));
+}
+
+vec2 getUv(vec2 position) {
+    return vec2(position.x / resolution.x, position.y / resolution.y);
 }

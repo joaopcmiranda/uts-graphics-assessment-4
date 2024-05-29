@@ -44,7 +44,6 @@ export type Parameters = {
     amplitudeDecayRate: number;
     offset: number;
     edgeOffset: number;
-    edgeOffsetThreshold: number;
     uTextureDensity: number;
     grassSeed: number;
     terrainSeed: number;
@@ -61,6 +60,7 @@ export type Parameters = {
       intensity: number;
       cardinalAngle: number;
       heightAngle: number;
+      raymarchingSteps: number;
     }
   }
 }
@@ -220,25 +220,25 @@ export const fields = (_props: Props): GUIFields<Parameters> => ({
         type: "number",
         name: "X Length",
         min: 100,
-        max: 2000,
+        max: 500,
         step: 100,
-        default: 2000,
+        default: 500,
         slowUpdate: true
       },
       zLength: {
         type: "number",
         name: "Z Length",
         min: 100,
-        max: 2000,
+        max: 500,
         step: 100,
-        default: 2000,
+        default: 500,
         slowUpdate: true
       },
       polyCount: {
         type: "number",
         name: "Poly Count",
         min: 0.1,
-        max: 2,
+        max: 5,
         step: 0.1,
         default: 1,
         slowUpdate: true
@@ -247,9 +247,9 @@ export const fields = (_props: Props): GUIFields<Parameters> => ({
         type: "number",
         name: "Hill Scale",
         min: 1,
-        max: 1000,
+        max: 400,
         step: 1,
-        default: 200,
+        default: 50,
         slowUpdate: true
       },
       hillDensity: {
@@ -257,8 +257,8 @@ export const fields = (_props: Props): GUIFields<Parameters> => ({
         name: "Hill Density",
         min: 1,
         max: 20,
-        step: 1,
-        default: 2,
+        step: 0.1,
+        default: 3.3,
         slowUpdate: true
       },
       roughness: {
@@ -267,7 +267,7 @@ export const fields = (_props: Props): GUIFields<Parameters> => ({
         min: 1,
         max: 2,
         step: 0.01,
-        default: 1.5,
+        default: 1.46,
         slowUpdate: true
       },
       generations: {
@@ -291,28 +291,19 @@ export const fields = (_props: Props): GUIFields<Parameters> => ({
       offset: {
         type: "number",
         name: "Offset",
-        min: -1000,
-        max: 1000,
+        min: -300,
+        max: 300,
         step: 1,
-        default: -170,
+        default: -30,
         slowUpdate: true
       },
       edgeOffset: {
         type: "number",
         name: "Edge Offset",
         min: 0,
-        max: 1000,
+        max: 400,
         step: 1,
-        default: 200,
-        slowUpdate: true
-      },
-      edgeOffsetThreshold: {
-        type: "number",
-        name: "Edge Offset Threshold",
-        min: 0,
-        max: 1,
-        step: 0.01,
-        default: 0.4,
+        default: 20,
         slowUpdate: true
       },
       uTextureDensity: {
@@ -321,7 +312,7 @@ export const fields = (_props: Props): GUIFields<Parameters> => ({
         min: 1,
         max: 1000,
         step: 1,
-        default: 100,
+        default: 50,
         slowUpdate: true
       },
       grassSeed: {
@@ -339,16 +330,16 @@ export const fields = (_props: Props): GUIFields<Parameters> => ({
         min: 0,
         max: 1,
         step: 0.01,
-        default: 0.07,
+        default: 0.16,
         slowUpdate: true
       },
       fogDistance: {
         type: "number",
         name: "Fog Distance",
-        min: 0,
+        min: 0.8,
         max: 1,
-        step: 0.01,
-        default: 0.9,
+        step: 0.001,
+        default: 0.95,
         slowUpdate: true
       }
     }
@@ -407,7 +398,15 @@ export const fields = (_props: Props): GUIFields<Parameters> => ({
             min: 0,
             max: 90,
             step: 1,
-            default: 45
+            default: 15
+          },
+          raymarchingSteps: {
+            type: "number",
+            name: "Raymarching Steps",
+            min: 5,
+            max: 100,
+            step: 1,
+            default: 50
           }
         }
       }

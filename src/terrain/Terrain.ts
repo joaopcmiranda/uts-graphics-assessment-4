@@ -1,5 +1,4 @@
 import * as THREE from "three";
-import { ShaderMaterial } from "three";
 import terrainVertexShader from "./terrain.vert?raw";
 import terrainFragmentShader from "./terrain.frag?raw";
 import functionsShader from "./functions.glsl?raw";
@@ -24,8 +23,10 @@ import stoneNormalTexture from "./texture/stone/Stone_001_NRM.jpg";
 import stoneRoughnessTexture from "./texture/stone/Stone_001_ROUGH.jpg";
 import { Parameters } from "../ui/parameters.ts";
 
-const { PlaneGeometry, TextureLoader, Mesh } = THREE;
+const { PlaneGeometry, TextureLoader, Mesh, ShaderMaterial, Vector2 } = THREE;
 type PlaneGeometry = THREE.PlaneGeometry;
+type ShaderMaterial = THREE.ShaderMaterial;
+type Vector3 = THREE.Vector3;
 
 export class Terrain extends Mesh<PlaneGeometry, ShaderMaterial> {
 
@@ -40,27 +41,30 @@ export class Terrain extends Mesh<PlaneGeometry, ShaderMaterial> {
   private p_amplitudeDecayRate: number;
   private p_offset: number;
   private p_edgeOffset: number;
-  private p_edgeOffsetThreshold: number;
   private p_uTextureDensity: number;
   private p_grassSeed: number;
   private p_stoneThreshold: number;
   private p_fogDistance: number;
   private p_terrainSeed: number;
 
-  constructor(parameters: Parameters['landscape']) {
+  // sun
+  private p_sunIntensity: number;
+  private p_sunColor: string;
+  private p_sunPosition: Vector3;
+  private p_raymarchingSteps: number;
+
+  // ambient light
+  private p_ambientIntensity: number;
+  private p_ambientColor: string;
+
+  constructor(parameters: Parameters['landscape'], sunPosition: Vector3, lightingParameters: Parameters['lighting']) {
     const geometry = new PlaneGeometry(parameters.xLength, parameters.zLength, parameters.xLength * parameters.polyCount, parameters.zLength * parameters.polyCount);
 
     console.log('Terrain material');
     const material = new ShaderMaterial({
-      uniforms: THREE.UniformsUtils.merge([
-        THREE.UniformsLib.common,
-        THREE.UniformsLib.specularmap,
-        THREE.UniformsLib.envmap,
-        THREE.UniformsLib.aomap,
-        THREE.UniformsLib.lightmap,
-        THREE.UniformsLib.fog,
-        THREE.UniformsLib.lights,
+      uniforms:
         {
+          resolution: { value: new Vector2( parameters.xLength, parameters.zLength ) },
           uGenerations: { value: parameters.generations },
           uDecayRate: { value: parameters.amplitudeDecayRate },
           uRoughness: { value: parameters.roughness },
@@ -68,11 +72,19 @@ export class Terrain extends Mesh<PlaneGeometry, ShaderMaterial> {
           uInitialFrequency: { value: parameters.hillDensity },
           uOffset: { value: parameters.offset },
           uEdgeOffset: { value: parameters.edgeOffset },
-          uEdgeOffsetThreshold: { value: parameters.edgeOffsetThreshold },
           uTextureDensity: { value: parameters.uTextureDensity },
           uGrassSeed: { value: parameters.grassSeed },
           uStoneThreshold: { value: parameters.stoneThreshold },
           uFogDistance: { value: parameters.fogDistance },
+
+          // lighting
+          uSunIntensity: { value: lightingParameters.sun.intensity },
+          uSunColor: { value: new THREE.Color(lightingParameters.sun.color) },
+          uSunPosition: { value: sunPosition.clone() },
+          uAmbientLightIntensity: { value: lightingParameters.ambientLight.intensity },
+          uAmbientLightColor: { value: new THREE.Color(lightingParameters.ambientLight.color) },
+          uRaymarchingSteps: { value: lightingParameters.sun.raymarchingSteps },
+
 
           // textures
           uGrass1Texture: { value: new TextureLoader().load(grass1ColorTexture) },
@@ -90,15 +102,15 @@ export class Terrain extends Mesh<PlaneGeometry, ShaderMaterial> {
           uStoneTexture: { value: new TextureLoader().load(stoneColorTexture) },
           uStoneTextureNormal: { value: new TextureLoader().load(stoneNormalTexture) },
           uStoneTextureRoughness: { value: new TextureLoader().load(stoneRoughnessTexture) }
-        }
-      ]),
+        },
       defines: {
         WIDTH: (parameters.xLength * parameters.polyCount).toFixed(1),
         HEIGHT: (parameters.zLength * parameters.polyCount).toFixed(1),
         BOUNDSX: parameters.xLength.toFixed(1),
         BOUNDSY: parameters.zLength.toFixed(1),
         DEFAULT_SEED: parameters.terrainSeed.toFixed(6),
-        SHOW_NORMAL_MAP: parameters.normalMap
+        SHOW_NORMAL_MAP: parameters.normalMap,
+        PI: Math.PI.toFixed(6)
       },
       fragmentShader: functionsShader + terrainFragmentShader,
       vertexShader: functionsShader + terrainVertexShader
@@ -122,15 +134,20 @@ export class Terrain extends Mesh<PlaneGeometry, ShaderMaterial> {
     this.p_hillDensity = parameters.hillDensity;
     this.p_offset = parameters.offset;
     this.p_edgeOffset = parameters.edgeOffset;
-    this.p_edgeOffsetThreshold = parameters.edgeOffsetThreshold;
     this.p_uTextureDensity = parameters.uTextureDensity;
     this.p_grassSeed = parameters.grassSeed;
     this.p_stoneThreshold = parameters.stoneThreshold;
     this.p_fogDistance = parameters.fogDistance;
     this.p_normalMap = parameters.normalMap;
+    this.p_sunIntensity = lightingParameters.sun.intensity;
+    this.p_sunColor = lightingParameters.sun.color;
+    this.p_sunPosition = sunPosition.clone();
+    this.p_ambientIntensity = lightingParameters.ambientLight.intensity;
+    this.p_ambientColor = lightingParameters.ambientLight.color;
+    this.p_raymarchingSteps = lightingParameters.sun.raymarchingSteps;
   }
 
-  updateParameters(newParameters: Parameters['landscape']) {
+  updateParameters(newParameters: Parameters['landscape'], sunPosition: Vector3, lightingParameters: Parameters['lighting']) {
 
     if (this.p_xLength !== newParameters.xLength || this.p_zLength !== newParameters.zLength || this.p_polyCount !== newParameters.polyCount) {
       this.geometry.dispose();
@@ -138,6 +155,7 @@ export class Terrain extends Mesh<PlaneGeometry, ShaderMaterial> {
       this.p_xLength = newParameters.xLength;
       this.p_zLength = newParameters.zLength;
       this.p_polyCount = newParameters.polyCount;
+      this.material.uniforms.resolution.value = new Vector2(newParameters.xLength, newParameters.zLength);
     }
 
     if (this.p_terrainSeed !== newParameters.terrainSeed) {
@@ -173,10 +191,6 @@ export class Terrain extends Mesh<PlaneGeometry, ShaderMaterial> {
       this.material.uniforms.uEdgeOffset.value = newParameters.edgeOffset;
       this.p_edgeOffset = newParameters.edgeOffset;
     }
-    if (this.p_edgeOffsetThreshold !== newParameters.edgeOffsetThreshold) {
-      this.material.uniforms.uEdgeOffsetThreshold.value = newParameters.edgeOffsetThreshold;
-      this.p_edgeOffsetThreshold = newParameters.edgeOffsetThreshold;
-    }
     if (this.p_uTextureDensity !== newParameters.uTextureDensity) {
       this.material.uniforms.uTextureDensity.value = newParameters.uTextureDensity;
       this.p_uTextureDensity = newParameters.uTextureDensity;
@@ -197,6 +211,31 @@ export class Terrain extends Mesh<PlaneGeometry, ShaderMaterial> {
       this.material.defines.SHOW_NORMAL_MAP = newParameters.normalMap;
       this.material.needsUpdate = true;
       this.p_normalMap = newParameters.normalMap;
+    }
+    if (this.p_sunIntensity !== lightingParameters.sun.intensity) {
+      this.material.uniforms.uSunIntensity.value = lightingParameters.sun.intensity;
+      this.p_sunIntensity = lightingParameters.sun.intensity;
+    }
+    if (this.p_sunColor !== lightingParameters.sun.color) {
+      this.material.uniforms.uSunColor.value = new THREE.Color(lightingParameters.sun.color);
+      this.p_sunColor = lightingParameters.sun.color;
+    }
+    if (this.p_sunPosition.x !== sunPosition.x || this.p_sunPosition.y !== sunPosition.y || this.p_sunPosition.z !== sunPosition.z) {
+      console.log('updating sun position', sunPosition.clone());
+      this.material.uniforms.uSunPosition.value = sunPosition.clone();
+      this.p_sunPosition = sunPosition.clone();
+    }
+    if (this.p_ambientIntensity !== lightingParameters.ambientLight.intensity) {
+      this.material.uniforms.uAmbientLightIntensity.value = lightingParameters.ambientLight.intensity;
+      this.p_ambientIntensity = lightingParameters.ambientLight.intensity;
+    }
+    if (this.p_ambientColor !== lightingParameters.ambientLight.color) {
+      this.material.uniforms.uAmbientLightColor.value = new THREE.Color(lightingParameters.ambientLight.color);
+      this.p_ambientColor = lightingParameters.ambientLight.color;
+    }
+    if (this.p_raymarchingSteps !== lightingParameters.sun.raymarchingSteps) {
+      this.material.uniforms.uRaymarchingSteps.value = lightingParameters.sun.raymarchingSteps;
+      this.p_raymarchingSteps = lightingParameters.sun.raymarchingSteps;
     }
   }
 }

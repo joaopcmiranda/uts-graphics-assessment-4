@@ -19,7 +19,7 @@ export const setupCartController = (track: CurvePath) => {
 };
 
 
-export const updateCartPosition = (track: CurvePath, {gravity, friction, liftSpeed}: Parameters['coaster']) => {
+export const updateCartPosition = (track: CurvePath, {gravity, friction, liftSpeed}: Parameters['coaster'], deltaTime: number) => {
     // To be run every frame
 
 
@@ -39,8 +39,7 @@ export const updateCartPosition = (track: CurvePath, {gravity, friction, liftSpe
 
 
     // Move our progress based on velocity
-    // progress += velocity * delta;
-    progress += velocity * 0.01; // test
+    progress += velocity * deltaTime;
 
     // We want to make sure (progress / track_length) is within [0, 1]
     // so progress needs to be within [0, track_length]

@@ -9,7 +9,7 @@ type Clock = THREE.Clock;
 
 
 // Main function, responsible for setting up the app, and running the loop
-const windowWidth = window.innerWidth * .7;
+const windowWidth = window.innerWidth;
 export const App = () => {
 
   // declare variables for WebGL renderer, scene, input and perspective camera
@@ -27,7 +27,7 @@ export const App = () => {
 
   // Resizing screen handling
   const OnResize = () => {
-    const width = window.innerWidth * .7;
+    const width = window.innerWidth;
     const height = window.innerHeight;
     _renderer.setSize(width, height);
     _camera.aspect = width / height;
@@ -58,8 +58,9 @@ export const App = () => {
 
     // Input defaults set up
     _orbitControls.minDistance = 1;
-    _orbitControls.maxPolarAngle = Math.PI / 2;
-    _orbitControls.maxDistance = 1000;
+    // _orbitControls.maxPolarAngle = Math.PI / 2;
+    _orbitControls.maxDistance = 500;
+    _orbitControls.enableDamping = true;
 
     // Custom setup
     // allow custom overrides and any additional setup the user desires.

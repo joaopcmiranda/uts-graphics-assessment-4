@@ -1,40 +1,31 @@
-#define PHONG
+uniform float uAmbientLightIntensity;
+uniform vec3 uAmbientLightColor;
+uniform vec3 uSunColor;
+uniform vec3 uSunPosition;
+uniform float uSunIntensity;
+uniform float uRaymarchingSteps;
 
-#include <common>
+
+float terrainOcclusion(vec3 sunPos) {
+    float samples = uRaymarchingSteps;
+    vec3 position = vec3(vUv, getHeight(vUv));
+    float occlusion = 0.0;
+    float step = 0.5 / samples;
+    for (float i = 0.0; i < samples; i++) {
+        vec3 samplePos = position + sunPos * i * step;
+        float sampleHeight = getHeight(samplePos.xy);
+        if (samplePos.z < sampleHeight) {
+            occlusion += smoothstep(0.0, 1.0, (sampleHeight - samplePos.z) / 0.1);
+        }
+    }
+    return occlusion / samples;
+}
 
 
-#include <packing>
-#include <dithering_pars_fragment>
-#include <color_pars_fragment>
-#include <uv_pars_fragment>
-#include <map_pars_fragment>
-#include <alphamap_pars_fragment>
-#include <alphatest_pars_fragment>
-#include <alphahash_pars_fragment>
-#include <aomap_pars_fragment>
-#include <lightmap_pars_fragment>
-#include <emissivemap_pars_fragment>
-#include <envmap_common_pars_fragment>
-#include <envmap_pars_fragment>
-#include <fog_pars_fragment>
-#include <bsdfs>
-#include <lights_pars_begin>
-#include <normal_pars_fragment>
-#include <lights_phong_pars_fragment>
-#include <shadowmap_pars_fragment>
-#include <bumpmap_pars_fragment>
-#include <normalmap_pars_fragment>
-#include <specularmap_pars_fragment>
-#include <logdepthbuf_pars_fragment>
-#include <clipping_planes_pars_fragment>
 void main() {
 
 
     #ifndef SHOW_NORMAL_MAP
-    vec3 sunPos = uSunPosition.xzy;
-    vec3 lightDir = normalize(sunPos - vPosition);
-    vec3 viewDir = normalize(cameraPosition - vPosition);
-    vec3 halfDir = normalize(lightDir + viewDir);
 
     // Texture calculations
     float noiseFactor = noise(vUv, DEFAULT_SEED) * 0.3;
@@ -69,52 +60,40 @@ void main() {
     grassNormal += texture2D(uGrass5TextureNormal, tile).rgb * grass5amount;
     grassNormal = normalize(grassNormal);
 
+    vec3 explicitNormal = getNormal(vUv, .001);
+    explicitNormal = vec3(-explicitNormal.x, -explicitNormal.z, explicitNormal.y);
+    vec3 normal = mix(explicitNormal, grassNormal, 0.7);
+
     // Stone texture
     vec3 stoneColor = texture2D(uStoneTexture, tile).rgb;
     float stoneRoughness = texture2D(uStoneTextureRoughness, tile).r;
-    float stoneFactor = max(min((1.0 / vFlatness * (uStoneThreshold / 100.)), 1.0), 0.0);
+    float stoneFactor = max(min((1.0 / getFlatness(vUv, 0.0001) * (uStoneThreshold / 100.)), 1.0), 0.0);
 
     // Final mixes
     vec4 diffuseColor = vec4(mix(grassColor, stoneColor, stoneFactor), opacity);
 
+    // lighting
+    vec3 sunPos = vec3(-uSunPosition.x, uSunPosition.z, -uSunPosition.y);
+    vec3 lightDir = normalize(sunPos - vPosition);
+    vec3 viewDir = normalize(cameraPosition - vPosition);
+    vec3 halfDir = normalize(lightDir + viewDir);
 
-    #include <clipping_planes_fragment>
-	ReflectedLight reflectedLight = ReflectedLight( vec3( 0.0 ), vec3( 0.0 ), vec3( 0.0 ), vec3( 0.0 ) );
-    vec3 totalEmissiveRadiance = emissive;
-    #include <logdepthbuf_fragment>
-	#include <map_fragment>
-	#include <color_fragment>
-	#include <alphamap_fragment>
-	#include <alphatest_fragment>
-	#include <alphahash_fragment>
-	#include <specularmap_fragment>
-	#include <normal_fragment_begin>
-	#include <normal_fragment_maps>
-     normal = normalize(getNormal(vUv, 0.0001) + grassNormal * .1);
-	#include <emissivemap_fragment>
-	#include <lights_phong_fragment>
-	#include <lights_fragment_begin>
-	#include <lights_fragment_maps>
-	#include <lights_fragment_end>
-	#include <aomap_fragment>
-	vec3 outgoingLight = reflectedLight.directDiffuse + reflectedLight.indirectDiffuse + reflectedLight.directSpecular + reflectedLight.indirectSpecular + totalEmissiveRadiance;
-    #include <envmap_fragment>
-	#include <opaque_fragment>
-	#include <tonemapping_fragment>
-	#include <colorspace_fragment>
-	#include <fog_fragment>
-	#include <premultiplied_alpha_fragment>
+    vec3 sunUv = vec3(sunPos.xy / 500. + .5, sunPos.z);
 
-    #include <dithering_fragment>
+    float NdotL = terrainOcclusion(sunUv);
+
+    vec3 color = diffuseColor.rgb *
+    (uAmbientLightColor * uAmbientLightIntensity + uSunColor * uSunIntensity * NdotL);
+
     // diffuse the color with light grey as it gets further away from the center
     float distance = length(vUv - vec2(0.5, 0.5));
-    float fade = distance * 2.0;
-    vec3 fragColor = mix(gl_FragColor.rgb, vec3(0.7, 0.7, 0.7), smoothstep(0.0, 1., bias(1. - uFogDistance, fade)));
+    float fade = distance * 1.5;
+    vec3 fragColor = mix(color, vec3(0.7, 0.7, 0.7), smoothstep(0.0, 1., bias(1. - uFogDistance, fade)));
 
     gl_FragColor = vec4(fragColor, 1.0);
 
     #else
-    gl_FragColor = vec4(vNormal, 1.0);
+    gl_FragColor = vec4(vec3(dot(getNormal(vUv, .001), vec3(0., 0., 1.))), 1.0);
     #endif
 
 

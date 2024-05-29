@@ -50,10 +50,12 @@ import { Lighting } from "./lighting/Lighting.ts";
 // Lighting setup
   console.log('Lighting setup...');
   const lighting = new Lighting(parameters.lighting);
+  const sunPosition = lighting.sunPosition;
+
 
 // Terrain setup
   console.log('Terrain setup...');
-  const terrain = new Terrain(parameters.landscape);
+  const terrain = new Terrain(parameters.landscape, sunPosition, parameters.lighting);
 
   console.log('Starting app...');
 
@@ -88,7 +90,7 @@ import { Lighting } from "./lighting/Lighting.ts";
   /**
    * Update function, runs every frame, use clock and deltaTime for time
    */
-  app.update(({ clock, camera, orbit }) => {
+  app.update(({ clock, camera, orbit, delta }) => {
     if (parameters.paused) {
       if (clock.running) {
         clock.stop()
@@ -101,14 +103,12 @@ import { Lighting } from "./lighting/Lighting.ts";
     }
 
     coasterTracks.update();
-    // fpv.update();
 
     lighting.updateParameters(parameters.lighting);
-    terrain.updateParameters(parameters.landscape);
-
+    terrain.updateParameters(parameters.landscape, lighting.sunPosition, parameters.lighting);
 
     if (parameters.coaster.fpv) {
-      cartProgress = updateCartPosition(initialCoasterPath, parameters.coaster);
+      cartProgress = updateCartPosition(initialCoasterPath, parameters.coaster, delta);
       let next_pos = initialCoasterPath.getPoint(cartProgress / trackLength);
       // testBox.position.set(next_pos.x, next_pos.y, next_pos.z);
       camera.position.set(next_pos.x, next_pos.y + 5, next_pos.z);
