@@ -4,7 +4,7 @@ import { exampleCoasterPath } from "./example-coaster.js";
 import { setupCartController, updateCartPosition } from "./cart-location.js";
 import { Props } from "./ui/parameters.ts";
 import { CoasterMesh } from "./tracks/CoasterMesh.ts";
-import { Terrain } from "./newHeightMap/Terrain.ts";
+import { Terrain } from "./terrain/Terrain.ts";
 import { SkyBox } from "./skybox/SkyBox.ts";
 import { Lighting } from "./lighting/Lighting.ts";
 
@@ -80,7 +80,7 @@ import { Lighting } from "./lighting/Lighting.ts";
 
     // rotate terrain to face up
     console.log('Rotating terrain to face up...');
-    // terrain.lookAt(0, 1, 0);
+    terrain.lookAt(0, 1, 0);
     scene.add(terrain);
   });
 

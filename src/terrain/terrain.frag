@@ -1,43 +1,4 @@
 #define PHONG
-uniform vec3 diffuse;
-uniform vec3 emissive;
-uniform vec3 specular;
-uniform float shininess;
-uniform float opacity;
-varying float vFlatness;
-varying vec2 vUv;
-varying vec3 vPosition;
-
-uniform float uFogDistance;
-
-// Ambient light
-uniform vec3 uAmbientLightColor;
-uniform float uAmbientLightIntensity;
-
-// Sun
-uniform vec3 uSunPosition;
-uniform vec3 uSunColor;
-uniform float uSunIntensity;
-
-// Textures
-uniform float uStoneThreshold;
-uniform float uTextureDensity;
-uniform float uGrassSeed;
-uniform sampler2D uGrass1Texture;
-uniform sampler2D uGrass1TextureNormal;
-uniform sampler2D uGrass1TextureRoughness;
-uniform sampler2D uGrass3Texture;
-uniform sampler2D uGrass3TextureNormal;
-uniform sampler2D uGrass3TextureRoughness;
-uniform sampler2D uGrass4Texture;
-uniform sampler2D uGrass4TextureNormal;
-uniform sampler2D uGrass4TextureRoughness;
-uniform sampler2D uGrass5Texture;
-uniform sampler2D uGrass5TextureNormal;
-uniform sampler2D uGrass5TextureRoughness;
-uniform sampler2D uStoneTexture;
-uniform sampler2D uStoneTextureNormal;
-uniform sampler2D uStoneTextureRoughness;
 
 #include <common>
 
@@ -129,7 +90,7 @@ void main() {
 	#include <specularmap_fragment>
 	#include <normal_fragment_begin>
 	#include <normal_fragment_maps>
-     normal = normalize(vNormal + grassNormal * .1);
+     normal = normalize(getNormal(vUv, 0.0001) + grassNormal * .1);
 	#include <emissivemap_fragment>
 	#include <lights_phong_fragment>
 	#include <lights_fragment_begin>
